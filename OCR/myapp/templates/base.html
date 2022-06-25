@@ -21,7 +21,7 @@
     </script>
 </head>
 <body>
-    <form action="/coocr_upload" method="post" enctype="multipart/form-data">
+    <form action="/ocr/" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="file" name="uploadfile" id="uploadfile"/><br>
 

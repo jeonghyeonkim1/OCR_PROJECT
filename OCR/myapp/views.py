@@ -10,31 +10,34 @@ import re
 import time
 
 
-def ocr_uploader(req):
+
+    
+    
+def ocr(req):
     context = {}
     if 'uploadfile' in req.FILES:
         uploadfile = req.FILES.get('uploadfile', '')
 
         if uploadfile != '':
-            cam = cv2.VideoCapture(uploadfile)
+            cap = cv2.VideoCapture(uploadfile)
+            w, h, fps = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
+                cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), cap.get(cv2.CAP_PROP_FPS)
             fcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-            out = cv2.VideoWriter('/static/out/output.avi', fcc, fps, (width, height))
+            out = cv2.VideoWriter('/static/out/output.avi',
+                                  fcc, fps, (w, h))
 
             while (cap.isOpened()):
                 ret, frame = cap.read()
-                w, h, fps = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), cap.get(cv2.CAP_PROP_FPS)
+                
 
                 if ret:
                     out.write(frame)
-                    
+
                 else:
                     print("Fail to read frame!")
                     break
-                
+
             out.release()
             cap.release()
 
-    return render(request, 'base.html', context)
-    
-def ocr(req):
-    return render(request, 'base.html')
+    return render(req, 'base.html', context)
