@@ -11,10 +11,22 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
     <script src="https://kit.fontawesome.com/7460690a88.js" crossorigin="anonymous"></script>
+
+    <script>
+        $(function(){
+            $('form button').click(function(){
+                $('form').submit()
+            })
+        })
+    </script>
 </head>
 <body>
-    <div class="boder boder-3 boder-danger p-5">
-        <input type="file">
-    </div>
+    <form action="/coocr_upload" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="uploadfile" id="uploadfile"/><br>
+
+        <button type="submit">READ</button>
+
+    </form>
 </body>
 </html>
