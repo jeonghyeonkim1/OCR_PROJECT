@@ -14,6 +14,8 @@ def ocr(request):
     context = {}
     if 'video_url' in request.POST:
 
+        os.mkdir('./OCR/static/out') if not os.path.exists('./OCR/static/out') else print('이미 폴더가 존재합니다.')
+
         cap = cv2.VideoCapture(request.POST['video_url'])
 
         w, h, fps = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
@@ -44,10 +46,10 @@ def ocr(request):
 
 
 def video(request):
-    context = {}
+    context = {'route': './OCR/static/out/output.avi'}
 
-    model = r'C:\DevRoot\dataset\ComputerVision\dnnface\res10_300x300_ssd_iter_140000_fp16.caffemodel'
-    config = r'C:\DevRoot\dataset\ComputerVision\dnnface\deploy.prototxt'
+    model = r'D:\DevRoot\dataset\ComputerVision\dnnface\res10_300x300_ssd_iter_140000_fp16.caffemodel'
+    config = r'D:\DevRoot\dataset\ComputerVision\dnnface\deploy.prototxt'
 
     cap = cv2.VideoCapture('./OCR/static/out/output.avi')
 

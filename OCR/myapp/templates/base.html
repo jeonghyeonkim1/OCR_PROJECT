@@ -21,13 +21,18 @@
     </script>
 </head>
 <body>
+    <div id='video_area'><video src='https://vod-progressive.akamaized.net/exp=1656232753~acl=%2Fvimeo-prod-skyfire-std-us%2F01%2F3626%2F17%2F443134423%2F1940911897.mp4~hmac=18946c9754316eb41ec9b2d1481416c42faf3d89fb1826849cdc48a3fddd8f2c/vimeo-prod-skyfire-std-us/01/3626/17/443134423/1940911897.mp4'></div>
     <form action="/ocr/" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="text" name="video_url" id="video_url"/><br>
 
         <button type="submit">저장</button>
+        {{ route }}
 
-        <a href="/ocr/video">눌러</a>
+        {% comment %}
+        저장을 눌렀을 때, 영상의 모든 전처리 (+ 테서렉트)
+        를 마친 후 저장이 되게 하고 그 저장한 것을 (테서렉트 다 거친 것을) video_area에 뜰 수 있게 해주시면 됨당.ㅎ
+        {% endcomment %}
 
     </form>
 </body>
