@@ -23,9 +23,11 @@
 <body>
     <form action="/ocr/" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <input type="file" name="uploadfile" id="uploadfile"/><br>
+        <input type="text" name="video_url" id="video_url"/><br>
 
-        <button type="submit">READ</button>
+        <button type="submit">저장</button>
+
+        <a href="/ocr/video">눌러</a>
 
     </form>
 </body>
