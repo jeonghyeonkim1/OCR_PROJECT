@@ -14,26 +14,70 @@
 
     <script>
         $(function(){
-            $('form button').click(function(){
-                $('form').submit()
+            $('#video_area').hover(function() {
+                $(this).animate({'opacity': '0.8'}, 'fast');
+            }, function() {
+                $(this).animate({'opacity': '1'}, 'fast');
+            })
+
+            $("[name='video_url']").focus(function() {
+                $(this)[0].placeholder = '';
+            })
+
+            $("[name='video_url']").blur(function() {
+                $(this)[0].placeholder = 'url을 입력해주세요.';
+            })
+
+            $("#url_submit").click(function() {
+                $.ajax({
+                    url: "{% url 'ocr:enter_call' %}",
+                    type: "GET",
+                    data: {
+                        'video_url': $("[name='video_url']").val()
+                    },
+                    success: function(res) {
+                        if ('error' in res) {
+                            alert(res['error']);
+                        }
+                        $("#url_close").click();
+                    }
+                })
             })
         })
     </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
-<body>
-    <div id='video_area'><video src='https://vod-progressive.akamaized.net/exp=1656232753~acl=%2Fvimeo-prod-skyfire-std-us%2F01%2F3626%2F17%2F443134423%2F1940911897.mp4~hmac=18946c9754316eb41ec9b2d1481416c42faf3d89fb1826849cdc48a3fddd8f2c/vimeo-prod-skyfire-std-us/01/3626/17/443134423/1940911897.mp4'></div>
-    <form action="/ocr/" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="text" name="video_url" id="video_url"/><br>
 
-        <button type="submit">저장</button>
-        {{ route }}
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">출입인원 세기</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="video_url" class='form-control text-center' placeholder='url을 입력해주세요.'/>
+      </div>
+      <div class="modal-footer">
+        <button id='url_close' type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id='url_submit' type="button" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        {% comment %}
-        저장을 눌렀을 때, 영상의 모든 전처리 (+ 테서렉트)
-        를 마친 후 저장이 되게 하고 그 저장한 것을 (테서렉트 다 거친 것을) video_area에 뜰 수 있게 해주시면 됨당.ㅎ
-        {% endcomment %}
-
-    </form>
+<body class='text-center bg-dark'>
+    <div style='position: fixed; left:5%; right:5%; top:5%; border-radius:30px;' class='d-flex justify-content-center align-items-center'>
+        <video class='border border-3 border-light' id='video_area' data-bs-target="#exampleModal" data-bs-toggle="modal" style='width: 80%; border-radius: 20px;cursor: pointer;' muted autoplay loop>
+            <source src="https://vod-progressive.akamaized.net/exp=1656245149~acl=%2Fvimeo-prod-skyfire-std-us%2F01%2F3626%2F17%2F443134423%2F1940911897.mp4~hmac=19bdb9dd460df461562b0a9be374bc9fca4176bc984c7365c2c8bee4baa5a961/vimeo-prod-skyfire-std-us/01/3626/17/443134423/1940911897.mp4">
+        </video>
+    </div>
 </body>
 </html>
