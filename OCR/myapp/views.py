@@ -13,7 +13,6 @@ def scan(request):
     return render(request, 'base2.html')
 
 
-
 def gen(camera):
     while True:
         frame = camera.get_frame()
