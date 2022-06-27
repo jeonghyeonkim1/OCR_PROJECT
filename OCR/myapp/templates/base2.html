@@ -14,17 +14,24 @@
 
     <script>
     </script>
-
+    <style>
+        td {
+            border:1px solid black;
+        }
+    </style>
 </head>
 <body>
     <form action="/camcap/" method="post">
         <table>
             <tr>
-                <td>
+                <td width='30px'>
                     캠화면 출력됩니다..
                 </td>
                 <td width='50%'>
                     <img src="http://127.0.0.1:8000/scan/mycam" style='width:500px;'>
+                </td>
+                <td>
+                    나중에 ocr 처리해 출력해야할 곳.
                 </td>
             </tr>
         </table>
