@@ -19,10 +19,13 @@ def enter_call(request):
     # 영상로더 선언
     cap = cv2.VideoCapture(request.GET['video_url'])
     if not cap.isOpened():
-        return JsonResponse({'error': '영상이 업솨영'})
+        cap = cv2.VideoCapture('C:/OCR_DATA/car.mp4')
+        if not cap.isOpened():
+            return JsonResponse({'error': '영상이 업솨영'})
 
     # 모델 선언
-    net = cv2.dnn.readNetFromDarknet('./mycar/cfg/yolov4-ANPR.cfg', './static/model/yolov4-ANPR.weights')
+    net = cv2.dnn.readNetFromDarknet(
+        './mycar/cfg/yolov4-ANPR.cfg', 'C:/OCR_DATA/yolov4-ANPR.weights')
     if net.empty():
         return JsonResponse({'error': '모델이 업솨영'})
 
@@ -31,6 +34,8 @@ def enter_call(request):
         ret, frame = cap.read()
         if not ret:
             break
+
+        frame = cv2.resize(frame, (0, 0), fx=0.6, fy=0.6)
 
         H, W, _ = frame.shape
 
@@ -82,12 +87,10 @@ def enter_call(request):
 
         cv2.imshow('Count People', frame)
 
-        if cv2.waitKey(0) == 27:  # esc를 누르면 강제 종료
+        if cv2.waitKey(1) == 27:  # esc를 누르면 강제 종료
             break
 
     cap.release()
     cv2.destroyAllWindows()
 
     return JsonResponse({'success': '영상 업로드 완료!'})
-
-# ./static/data/cars.mp4

@@ -1,5 +1,4 @@
-from django.urls import path, include
-from torch import view_as_complex
+from django.urls import path
 from . import views
 
 app_name = 'ocr'
