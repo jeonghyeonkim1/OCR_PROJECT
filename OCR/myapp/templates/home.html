@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block src %}
+<script>
+   
+</script>
+<style>
+
+    h6{
+        padding-top:15px;
+    }
+    .container tbody tr {
+        height:80px;
+    }
+    .container thead{
+        height:200px;
+    }
+    th i {
+        margin:50px;
+    }
+    th div {
+        margin-bottom:20px;
+    }
+    #menu1 th div {
+        margin-bottom:50px;
+    }
+    .container tbody td {
+        padding-top:112px;
+    }
+    .rounded {
+        border-radius: 1.25rem!important;
+    }
+    #box0{
+        border:10px solid #7a8fa424;
+        border-radius: 90px;
+        padding:10px;
+        margin-top:70px;
+    }
+    #box1{
+        border:13px solid #49507fc7;
+    }
+    #box2{
+        border:13px solid #7eb0c1c7;
+    }
+    #menu1{
+        float:left;
+        width:500px;
+        height:700px;
+    }
+    #menu2{
+        display:inline-block;
+        width:500px;
+        height:700px;
+        margin-left:30px;
+    }
+    #btn1{
+        text-decoration:none;
+        width:200px;
+        height:70px;
+        background-color: #49507fc7;
+        color:white;
+    }
+    #btn2{
+        text-decoration:none;
+        width:200px;
+        height:70px;
+        background-color: #7eb0c1c7;
+        color:white;
+    }
+    #btn1:hover {
+        background-color: #49507f;
+    }
+    #btn2:hover {
+        background-color: #709eae;
+    }
+    #btn1::before {
+        content: '';
+        width: 0%;
+        height: 100%;
+        display: block;
+        background: #b5ffe6b0;
+        position: absolute;
+        -ms-transform: skewX(-20deg);
+        -webkit-transform: skewX(-20deg); 
+        transform: skewX(-20deg);   
+        left: -10%;
+        opacity: 1;
+        top: 0;
+        z-index: -12;
+        -moz-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      -o-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      -webkit-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+         box-shadow:2px 0px 14px rgba(0,0,0,.6);
+      } 
+    
+    #btn1::after {
+        content: '';
+        width: 0%;
+        height: 100%;
+        display: block;
+        background: #b2cbf680;
+        position: absolute;
+      -ms-transform: skewX(-20deg);
+        -webkit-transform: skewX(-20deg); 
+        transform: skewX(-20deg);   
+        left: -10%;
+        opacity: 0;
+        top: 0;
+        z-index: -15;
+        -webkit-transition: all .94s cubic-bezier(.2,.95,.57,.99);
+        -moz-transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        -o-transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        box-shadow: 2px 0px 14px rgba(0,0,0,.6);
+    }
+    #btn1:hover::before, #btn1:hover::before{
+      opacity:1;
+      width: 116%;
+    }
+    #btn1:hover::after, #btn1:hover::after{
+      opacity:1;
+      width: 120%;
+    }
+    
+    #btn2::before {
+        content: '';
+        width: 0%;
+        height: 100%;
+        display: block;
+        background: #c9e2ff61;
+        position: absolute;
+        -ms-transform: skewX(-20deg);
+        -webkit-transform: skewX(-20deg); 
+        transform: skewX(-20deg);   
+        left: -10%;
+        opacity: 1;
+        top: 0;
+        z-index: -12;
+        -moz-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      -o-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      -webkit-transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+      transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
+         box-shadow:2px 0px 14px rgba(0,0,0,.6);
+      } 
+    
+    #btn2::after {
+        content: '';
+        width: 0%;
+        height: 100%;
+        display: block;
+        background: #efffcb;
+        position: absolute;
+      -ms-transform: skewX(-20deg);
+        -webkit-transform: skewX(-20deg); 
+        transform: skewX(-20deg);   
+        left: -10%;
+        opacity: 0;
+        top: 0;
+        z-index: -15;
+        -webkit-transition: all .94s cubic-bezier(.2,.95,.57,.99);
+        -moz-transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        -o-transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        transition: all .4s cubic-bezier(.2,.95,.57,.99);
+        box-shadow: 2px 0px 14px rgba(0,0,0,.6);
+    }
+    #btn2:hover::before, #btn2:hover::before{
+      opacity:1;
+      width: 116%;
+    }
+    #btn2:hover::after, #btn2:hover::after{
+      opacity:1;
+      width: 120%;
+    }
+</style>
+{% endblock %}
+
+{% block contents %}
+
+
+<body class="container" style='overflow: hidden;'>
+    <div class="r d-flex justify-content-center align-items-center" id='box0'>
+        <h4><i class="fa-solid fa-quote-left"></i></h4>
+        <h3>ㅤText OCR by recognizing objectㅤ</h3>
+        <h4><i class="fa-solid fa-quote-right"></i></h4>
+    </div>
+    <div class='rounded vh-100 m-2 p-2 d-flex justify-content-center align-items-center bg-light'>
+        
+        <div id='menu1'>
+            <div class="rounded vh-50 m-5 p-5 d-flex justify-content-center align-items-center" id='box1'>
+                <table class="table text-center">
+                    <thead>
+                        <tr>
+                            <th>
+                                <i class="display-3 fa-solid fa-arrow-right-arrow-left fa-beat"></i>
+                                <div><h3>Translation</h3></div>
+                            </th>
+                        </tr>
+                    </thead>    
+                    <tbody>
+                        <tr>
+                            <td> 
+                                <a id='btn1' style='display:inline-block;padding:20px 40px 20px 40px;' href='{% url "ocr:scan" %}'>Start</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id='menu2'>
+            <div class="rounded vh-50 m-5 p-5 d-flex justify-content-center align-items-center"  id='box2'>
+                <table class="table text-center">
+                    <thead>
+                        <tr>
+                            <th>
+                                <i class="display-3 fa-solid fa-book fa-beat"></i>
+                                <div><h3>Book Recommendation</h3></div>
+                            </th>
+                        </tr>
+                    </thead>
+                        
+                    <tbody>
+                        <tr>
+                            <td> 
+                                <a style='display:inline-block;padding:20px 40px 20px 40px;'  id='btn2' href='{% url "ocr:scan" %}'>Start</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> 
+        </div>
+    </div>
+
+</body>
+
+{% endblock %}
