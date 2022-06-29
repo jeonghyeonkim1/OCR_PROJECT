@@ -9,6 +9,10 @@ import threading
 # from myapp.camera import VideoCamera
 from requests import Response
 from PIL import ImageFont, ImageDraw, Image
+from matplotlib import pyplot as plt
+from easyocr import Reader
+import argparse
+import cv2
 
 def home(request):
     return render(request, 'home.html')
