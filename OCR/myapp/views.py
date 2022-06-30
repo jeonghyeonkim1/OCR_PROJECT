@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import StreamingHttpResponse, JsonResponse
+from django.http import StreamingHttpResponse
+from django.shortcuts import render
 import cv2
 import numpy as np
 import pytesseract
@@ -24,11 +25,11 @@ class VideoCamera(object):
     def __init__(self):
         self.video = cv2.VideoCapture(0)
         
-
     def __del__(self):
         self.video.release()
 
     def get_frame(self):
+        
         while True:
             ret, image = self.video.read()
             if ret:
@@ -47,11 +48,11 @@ class VideoCamera(object):
                         # construct the argument parser and parse the arguments
                         #ap = argparse.ArgumentParser()
                         #ap.add_argument("-i", "--image", required=True,
-                        #	help="path to input image to be OCR'd")
+                        #   help="path to input image to be OCR'd")
                         #ap.add_argument("-l", "--langs", type=str, default="en",
-                        #	help="comma separated list of languages to OCR")
+                        #   help="comma separated list of languages to OCR")
                         #ap.add_argument("-g", "--gpu", type=int, default=-1,
-                        #	help="whether or not GPU should be used")
+                        #   help="whether or not GPU should be used")
                         #args = vars(ap.parse_args())
 
                         # since we are using Jupyter Notebooks we can replace our argument
@@ -105,7 +106,6 @@ class VideoCamera(object):
 
 def gen(camera):
     while True:
-
         frame = camera.get_frame()
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
@@ -119,5 +119,4 @@ def mycam(request):
     except:  # This is bad! replace it with proper handling
         print("에러입니다...")
         pass
-
 
