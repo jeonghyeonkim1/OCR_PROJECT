@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from lib2to3 import pytree
+from platform import python_version
 from model import VGG_FeatureExtractor
 import tensorflow as tf
 import numpy as np
@@ -7,11 +9,12 @@ import cv2
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pytesseract
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from matplotlib import font_manager, rc
 
-st.snow()
+# st.snow()
 sns.set(rc = {'figure.figsize':(15,8)}, font_scale = 2)
 result_texts = []
 
@@ -39,7 +42,15 @@ bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
 bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
 realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
-with col1:
+
+    # if canvas.image_data is not None:
+    #     st.image(canvas.image_data)
+    # if canvas.json_data is not None:
+    #     objects = pd.json_normalize(canvas.json_data["objects"])
+    #     for col in objects.select_dtypes(include=["object"]).columns:
+    #         objects[col] = objects[col].astype("str")
+    #     st.dataframe(objects)
+if bg_image != None:
     st.write(' ')
     st.write(' ')
     canvas = st_canvas(
@@ -49,69 +60,101 @@ with col1:
         background_color=bg_color,
         background_image=Image.open(bg_image) if bg_image else None,
         update_streamlit=realtime_update,
-        width=288,
-        height=288,
+        width=288*3,
+        height=288*3,
         drawing_mode=drawing_mode,
         point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
         display_toolbar=st.sidebar.checkbox("Display toolbar", True),
         key='canvas'
     )
-    # if canvas.image_data is not None:
-    #     st.image(canvas.image_data)
-    # if canvas.json_data is not None:
-    #     objects = pd.json_normalize(canvas.json_data["objects"])
-    #     for col in objects.select_dtypes(include=["object"]).columns:
-    #         objects[col] = objects[col].astype("str")
-    #     st.dataframe(objects)
 
-if canvas.image_data is not None:
-    # image load
-    img = canvas.image_data.astype('uint8')
-    img = cv2.resize(img, (32, 32))
-    preview_img = cv2.resize(img, (288, 288))
-    
-    # preprocess image
-    x = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    x = np.array(x, dtype=np.float32)
-    x = x.reshape((-1, 32, 32, 3))
-    x = x / 255.
+    if canvas.image_data is not None:
 
-    # predict
-    y = model.predict(x).squeeze()
-    result = tf.argmax(y)
-    
-    # show result
-    st.write(f' ## Result: {idx2char[result]}')
+        img = Image.open(bg_image)
+        
+        # preprocess image
+        tess = pytesseract.image_to_string(
+            img,
+            lang='kor',
+            config='--psm 7'
+        )
 
-    result_texts.append(idx2char[result])
+        result_texts.append(tess)
 
-    # show prediction of most five
-    most_arg = y.argsort()[::-1][:5]
-    most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
-    chars = [f'{idx2char[idx]}' for idx in most_arg]
-    
-    chart_data = pd.DataFrame(
-        np.array([most_val, chars]).T,
-        columns=['Prob(%)', 'Pred']
-    )
+        message = st.text_area(
+                label = '',
+                value = ''.join(result_texts) if len(result_texts) > 0 else "",
+                height = 288
+            )
+            
 
-    font_path = "c:/Windows/Fonts/malgun.ttf"
-    font = font_manager.FontProperties(fname=font_path).get_name()
-    rc('font', family=font)
-    fig, ax = plt.subplots()
-    ax.bar(
-        chart_data['Pred'],
-        chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
-        color='red',
-        alpha=0.5
-    )
-    st.pyplot(fig)
+else:
+    with col1:
+        st.write(' ')
+        st.write(' ')
+        canvas = st_canvas(
+            fill_color='#FFFFFF',
+            stroke_width=stroke_width,
+            stroke_color=stroke_color,
+            background_color=bg_color,
+            background_image=Image.open(bg_image) if bg_image else None,
+            update_streamlit=realtime_update,
+            width=288,
+            height=288,
+            drawing_mode=drawing_mode,
+            point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
+            display_toolbar=st.sidebar.checkbox("Display toolbar", True),
+            key='canvas'
+        )
 
-with col2:
-    message = st.text_area(
-        label = '',
-        value = ''.join(result_texts) if len(result_texts) > 0 else "",
-        height = 288
-    )
+    if canvas.image_data is not None:
+
+        # image load
+        img = canvas.image_data.astype('uint8')
+        img = cv2.resize(img, (32, 32))
+        
+        # preprocess image
+        x = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        x = np.array(x, dtype=np.float32)
+        x = x.reshape((-1, 32, 32, 3))
+        x = x / 255.
+
+        # predict
+        y = model.predict(x).squeeze()
+        result = tf.argmax(y)
+        
+        # show result
+        st.write(f' ## Result: {idx2char[result]}')
+
+        result_texts.append(idx2char[result])
+
+        # show prediction of most five
+        most_arg = y.argsort()[::-1][:5]
+        most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
+        chars = [f'{idx2char[idx]}' for idx in most_arg]
+        
+        chart_data = pd.DataFrame(
+            np.array([most_val, chars]).T,
+            columns=['Prob(%)', 'Pred']
+        )
+
+        font_path = "c:/Windows/Fonts/malgun.ttf"
+        font = font_manager.FontProperties(fname=font_path).get_name()
+        rc('font', family=font)
+        fig, ax = plt.subplots()
+        ax.bar(
+            chart_data['Pred'],
+            chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
+            color='red',
+            alpha=0.5
+        )
+        st.pyplot(fig)
+
+        with col2:
+            message = st.text_area(
+                label = '',
+                value = ''.join(result_texts) if len(result_texts) > 0 else "",
+                height = 288
+            )
 
 print(result_texts)
