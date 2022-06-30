@@ -8,6 +8,10 @@ import threading
 # from myapp.camera import VideoCamera
 from requests import Response
 from PIL import ImageFont, ImageDraw, Image
+from matplotlib import pyplot as plt
+from easyocr import Reader
+import argparse
+import cv2
 
 def home(request):
     return render(request, 'home.html')
@@ -25,28 +29,74 @@ class VideoCamera(object):
         self.video.release()
 
     def get_frame(self):
-        cntr = 0
-        _, image = self.video.read()
-        # cntr += 1
-        # if((cntr%20) == 0):
-        #     imgh, imgw, chan = image.shape
-            # x1,y1,w1,h1 = 0,0,imgh,imgw
-            # imgchar = pytesseract.image_to_string(image, lang='kor')
-            # imgboxes = pytesseract.image_to_boxes(image)
+        while True:
+            ret, image = self.video.read()
+            if ret:
+                cv2.imshow('camera', image)
+                if cv2.waitKey(1) == 13:
+                    cv2.imwrite('./static/photo.jpg', image)
+                    a = cv2.imread('./static/photo.jpg')
+                    cv2.imshow('img', a)
+                    if cv2.waitKey(0) == 13:
 
-            # for boxes in imgboxes.splitlines():
-            #     boxes = boxes.split()
-            #     x1,y1,w1,h1 = int(boxes[1]), int(boxes[2]), int(boxes[3]), int(boxes[4])
-            #     cv2.rectangle(image, (x1, imgh-y1), (w1, imgh-h1), (0,0,0),3)
-            #     cv2.putText(image, boxes[0],(x1,imgh-h1+32), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,0,255), 2)
-                
-            
-            # (self.grabbed, self.frame) = self.video.read()
-            # threading.Thread(target=self.update, args=()).start()
+                        def cleanup_text(text):
+                            # strip out non-ASCII text so we can draw the text on the image
+                            # using OpenCV
+                            return "".join([c if ord(c) < 128 else "" for c in text]).strip()
 
-        _, jpeg = cv2.imencode('.jpg', image)
+                        # construct the argument parser and parse the arguments
+                        #ap = argparse.ArgumentParser()
+                        #ap.add_argument("-i", "--image", required=True,
+                        #	help="path to input image to be OCR'd")
+                        #ap.add_argument("-l", "--langs", type=str, default="en",
+                        #	help="comma separated list of languages to OCR")
+                        #ap.add_argument("-g", "--gpu", type=int, default=-1,
+                        #	help="whether or not GPU should be used")
+                        #args = vars(ap.parse_args())
 
-        return jpeg.tobytes()
+                        # since we are using Jupyter Notebooks we can replace our argument
+                        # parsing code with *hard coded* arguments and values
+                        args = {
+                            "image": "./static/photo.jpg",
+                            "langs": "ko,en",
+                            "gpu": -1
+                        }
+
+                        # break the input languages into a comma separated list
+                        langs = args["langs"].split(",")
+                        print("[INFO] OCR'ing with the following languages: {}".format(langs))
+
+                        # load the input image from disk
+                        image = cv2.imread(args["image"])
+
+                        # OCR the input image using EasyOCR
+                        print("[INFO] OCR'ing input image...")
+                        reader = Reader(langs, gpu=args["gpu"] > 0)
+                        results = reader.readtext(image)
+
+                        # loop over the results
+                        for (bbox, text, prob) in results:
+                            # display the OCR'd text and associated probability
+                            print("[INFO] {:.4f}: {}".format(prob, text))
+
+                            # unpack the bounding box
+                            (tl, tr, br, bl) = bbox
+                            tl = (int(tl[0]), int(tl[1]))
+                            tr = (int(tr[0]), int(tr[1]))
+                            br = (int(br[0]), int(br[1]))
+                            bl = (int(bl[0]), int(bl[1]))
+
+                            # cleanup the text and draw the box surrounding the text along
+                            # with the OCR'd text itself
+                            text = cleanup_text(text)
+                            cv2.rectangle(image, tl, br, (0, 255, 0), 2)
+                            cv2.putText(image, text, (tl[0], tl[1] - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
+                        cv2.imwrite('./static/photo1.jpg',image)
+                        cv2.destroyAllWindows()
+            _, jpeg = cv2.imencode('.jpg', image)
+            return jpeg.tobytes()
 
     def update(self):
         while True:
@@ -70,16 +120,4 @@ def mycam(request):
         print("에러입니다...")
         pass
 
-# def gen(camera, camera2):
-#     while True:
-#         frame = camera.get_frame()
-#         frame2 = camera2.get_frame()
-#         yield(b'--frame\r\n'
-#               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-#         yield(b'--frame\r\n'
-#               b'Content-Type: image/jpeg\r\n\r\n' + frame2 + b'\r\n\r\n')
-
-
-# def mycam(request):
-#     return StreamingHttpResponse(gen(VideoCamera()), content_type="multipart/x-mixed-replace;boundary=frame")
 
