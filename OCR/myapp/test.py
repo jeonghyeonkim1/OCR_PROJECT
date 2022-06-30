@@ -30,7 +30,7 @@ def cleanup_text(text):
 # since we are using Jupyter Notebooks we can replace our argument
 # parsing code with *hard coded* arguments and values
 args = {
-	"image": "./static/images.jpg",
+	"image": "./static/photo.jpg",
 	"langs": "ko,en",
 	"gpu": -1
 }
@@ -68,4 +68,4 @@ for (bbox, text, prob) in results:
 
 
 plt.figure(figsize=(20, 20))
-cv2.imwrite('./static/photo.jpg',image)
+cv2.imwrite('./static/photo1.jpg',image)
