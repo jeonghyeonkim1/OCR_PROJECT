@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
-from lib2to3 import pytree
-from platform import python_version
 from model import VGG_FeatureExtractor
+from PIL import Image
+from streamlit_drawable_canvas import st_canvas
+from matplotlib import font_manager, rc
+from functools import reduce
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -10,13 +11,39 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pytesseract
-from PIL import Image
-from streamlit_drawable_canvas import st_canvas
-from matplotlib import font_manager, rc
+import pymysql
+
+DB_HOST = "localhost"
+DB_USER = "myuser118"
+DB_PASSWORD = "1234"
+DB_NAME = "mydb118"
 
 # st.snow()
 sns.set(rc = {'figure.figsize':(15,8)}, font_scale = 2)
 result_texts = []
+st.markdown("<style>button {width: 230px}</style>", unsafe_allow_html=True)
+
+if 'typing' not in st.session_state:
+	st.session_state.typing = ''
+
+if 'space' not in st.session_state:
+	st.session_state.space = '0'
+
+if 'question' not in st.session_state:
+    db = pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        passwd=DB_PASSWORD,
+        db=DB_NAME,
+        charset='utf8'
+    )
+
+    sql = '''
+        SELECT sent FROM rand_sent ORDER BY RAND()
+    '''
+
+    with db.cursor() as cursor:
+        cursor.execute(sql)
 
 @st.cache(allow_output_mutation=True)
 def load_model():
@@ -29,6 +56,7 @@ def load_model():
 model, idx2char = load_model()
 
 col1, col2 = st.columns(2)
+btn1, btn2, btn3, btn4 = st.columns(4)
 
 drawing_mode = st.sidebar.selectbox(
     "Drawing tool:",
@@ -42,51 +70,72 @@ bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
 bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
 realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
-
-    # if canvas.image_data is not None:
-    #     st.image(canvas.image_data)
-    # if canvas.json_data is not None:
-    #     objects = pd.json_normalize(canvas.json_data["objects"])
-    #     for col in objects.select_dtypes(include=["object"]).columns:
-    #         objects[col] = objects[col].astype("str")
-    #     st.dataframe(objects)
 if bg_image != None:
     st.write(' ')
     st.write(' ')
-    canvas = st_canvas(
-        fill_color='#FFFFFF',
-        stroke_width=stroke_width,
-        stroke_color=stroke_color,
-        background_color=bg_color,
-        background_image=Image.open(bg_image) if bg_image else None,
-        update_streamlit=realtime_update,
-        width=288*3,
-        height=288*3,
-        drawing_mode=drawing_mode,
-        point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
-        display_toolbar=st.sidebar.checkbox("Display toolbar", True),
-        key='canvas'
+
+    img = np.array(Image.open(bg_image))
+    img=cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    height, width, channel = img.shape
+
+    # 블러처리
+    blur = cv2.bilateralFilter(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), -1, 3, 3)
+
+    # Threshold
+    adap = cv2.adaptiveThreshold(
+        blur,   
+        maxValue=255.0, 
+        adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        thresholdType=cv2.THRESH_BINARY_INV, 
+        blockSize=19,
+        C=9
     )
 
-    if canvas.image_data is not None:
+    contours, _ = cv2.findContours(
+        adap,
+        mode=cv2.RETR_LIST, 
+        method=cv2.CHAIN_APPROX_SIMPLE
+    )
 
-        img = Image.open(bg_image)
-        
-        # preprocess image
-        tess = pytesseract.image_to_string(
+    contours_dict = []
+
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+
+        contours_dict.append({
+            'contour': contour,
+            'x': x,
+            'y': y,
+            'w': w,
+            'h': h,
+            'cx': x + (w / 2),
+            'cy': y + (h / 2)
+        })
+
+    # 나중에 크기 / 가로 세로 길이 / 가로세로 비 / 조절해서 컷하고 싶을 때 쓰세용
+    good_con = reduce(
+        lambda a, b: a.append(b.update({'idx': len(a)}) or b) or a \
+                    if 50 < b['w'] * b['h'] < 3000 \
+                    and 3 < b['w'] < 60 \
+                    # and MIN_HEIGHT < b['h'] < MAX_HEIGHT \
+                    # and MIN_RATIO < b['w'] / b['h'] < MAX_RATIO
+                    else a,
+        contours_dict,
+        []
+    )
+
+    for contour in good_con:
+        cv2.rectangle(
             img,
-            lang='kor',
-            config='--psm 7'
+            pt1 = (contour['x'], contour['y']),
+            pt2 = (contour['x'] + contour['w'], contour['y'] + contour['h']),
+            color = (0, 0, 255),
+            thickness=3
         )
+    
+    st.image(img)  
 
-        result_texts.append(tess)
-
-        message = st.text_area(
-                label = '',
-                value = ''.join(result_texts) if len(result_texts) > 0 else "",
-                height = 288
-            )
-            
 
 else:
     with col1:
@@ -106,6 +155,10 @@ else:
             display_toolbar=st.sidebar.checkbox("Display toolbar", True),
             key='canvas'
         )
+        with btn1:
+            if st.button("띄어쓰기"):
+                st.session_state.typing += " "
+                st.session_state.space = "1"
 
     if canvas.image_data is not None:
 
@@ -124,37 +177,65 @@ else:
         result = tf.argmax(y)
         
         # show result
-        st.write(f' ## Result: {idx2char[result]}')
+        if idx2char[result] != "랬" and idx2char[result] != "웝":
+            st.write(f' ## Result: {idx2char[result]}')
+            if st.session_state.space == "0":
+                st.session_state.typing += idx2char[result]
+            else:
+                st.session_state.space = "0"
 
-        result_texts.append(idx2char[result])
-
-        # show prediction of most five
-        most_arg = y.argsort()[::-1][:5]
-        most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
-        chars = [f'{idx2char[idx]}' for idx in most_arg]
-        
-        chart_data = pd.DataFrame(
-            np.array([most_val, chars]).T,
-            columns=['Prob(%)', 'Pred']
-        )
-
-        font_path = "c:/Windows/Fonts/malgun.ttf"
-        font = font_manager.FontProperties(fname=font_path).get_name()
-        rc('font', family=font)
-        fig, ax = plt.subplots()
-        ax.bar(
-            chart_data['Pred'],
-            chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
-            color='red',
-            alpha=0.5
-        )
-        st.pyplot(fig)
-
-        with col2:
-            message = st.text_area(
-                label = '',
-                value = ''.join(result_texts) if len(result_texts) > 0 else "",
-                height = 288
+            # show prediction of most five
+            most_arg = y.argsort()[::-1][:5]
+            most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
+            chars = [f'{idx2char[idx]}' for idx in most_arg]
+            
+            chart_data = pd.DataFrame(
+                np.array([most_val, chars]).T,
+                columns=['Prob(%)', 'Pred']
             )
 
-print(result_texts)
+            font_path = "c:/Windows/Fonts/malgun.ttf"
+            font = font_manager.FontProperties(fname=font_path).get_name()
+            rc('font', family=font)
+            fig, ax = plt.subplots()
+            ax.bar(
+                chart_data['Pred'],
+                chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
+                color='red',
+                alpha=0.5
+            )
+            st.pyplot(fig)
+            
+            with btn3:
+                if st.button("초기화"):
+                    st.session_state.typing = ""
+
+            with btn4:
+                if st.button("제출"):
+                    st.session_state.typing += " "
+
+            with col2:
+                message = st.text_area(
+                    label = '',
+                    value = st.session_state.typing,
+                    height = 288
+                )
+
+        else:
+            st.write(' 문자를 작성해주세요~ ')
+            
+            with btn3:
+                if st.button("초기화"):
+                    st.session_state.typing = ""
+
+            with btn4:
+                if st.button("제출"):
+                    st.session_state.typing += " "
+
+            with col2:
+                message = st.text_area(
+                    label = '',
+                    value = st.session_state.typing,
+                    height = 288
+                )
+        
