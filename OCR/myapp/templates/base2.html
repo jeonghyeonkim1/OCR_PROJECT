@@ -4,25 +4,22 @@
 {% load static %}
 <script src="{% static 'bs/js/html2canvas.js' %}"></script>
 <script>
-    
-    function shoot(){
-        html2canvas(document.querySelector('#cam'), {}).then(function(canvas){
-            saveAs(cavas.toDataURL(), '.\static\testcapture.jpg');
-        });
-    }
-    function saveAs(url, filename) {
-        var link = docmnet.createElement('a');
-        if (typeof link.download === 'string') {
-            link.href = url;
-            link.download.appendChild(link);
-            document.body.appendChild(link);
-            document.body.removeChild(link);
-        }else{
-            window.open(url)
-        }
-    }
 
-    
+    $(function() {
+        $("#save").click(function() {
+            $.ajax({
+                url: '{% url "ocr:cam" %}',
+                type: 'GET',
+                data: {},
+                success: function(response) {
+                    alert('OCR 완료')
+                    $('#cam img').remove()
+                    $('#cam').append(`<img src='./static/photo.jpg'>`)
+                }
+            })
+        })
+    })
+
     
     
 </script>
@@ -48,18 +45,17 @@
                 </td>
                 <td width='50%'>
                     <div id='cam'>
-                        <img src="http://127.0.0.1:8000/scan/mycam" style='width:500px;'>
+                        <img src="" alt="">
                     </div>
-                    
                 </td>
                 <td>
-                    <img src="./static/photo1.jpg" alt="">
-                    <div id='output' style="display: inline-block; top: 4px; position: relative ;border: dotted 1px #ccc; padding: 2px;"></div>
+                    <div id='output' style="display: inline-block; top: 4px; position: relative ;border: dotted 1px #ccc; padding: 2px;">
+                    </div>
                 </td>
             </tr>
         </table>
         <div id='btn_div'>
-            <button type='button' id='save' onclick='shoot()' style=''>캡쳐</button>
+            <button type='button' id='save' style=''>다시실행</button>
         </div> 
     </div>
 </body>
