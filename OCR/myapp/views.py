@@ -29,6 +29,7 @@ def cam(request):
     while True:
         ret, image = camera.read()
 
+
         if ret:
             bbox, label, conf = cv.detect_common_objects(image)
             if 'book' in label:
@@ -43,6 +44,7 @@ def cam(request):
                     if cv2.waitKey(0) == 13:
                         def cleanup_text(text):
                             return "".join([c if ord(c) < 128 else "" for c in text]).strip()
+
 
                         args = {
                             "image": "./static/photo.jpg",
@@ -76,6 +78,7 @@ def cam(request):
 
                         cv2.imwrite('./static/ocr_result.jpg',image)
                         cv2.destroyAllWindows()
+
                         return JsonResponse({'img_path1': './static/photo.jpg', 'img_path2': './static/ocr_result.jpg'})            
             else:
                 bbox=[]
@@ -87,3 +90,4 @@ def cam(request):
             cv2.waitKey(1)
     cv2.destroyAllWindows()
     return JsonResponse({'img_path1': './static/photo.jpg', 'img_path2': './static/ocr_result.jpg'})
+
