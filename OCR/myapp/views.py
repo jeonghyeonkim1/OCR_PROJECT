@@ -88,6 +88,9 @@ def cam(request):
             out = draw_bbox(image, bbox, label, conf, write_conf=True)
             cv2.imshow('Real-time object detection', out)
             cv2.waitKey(1)
+            if cv2.waitKey(1) == 27:
+                break
+    cv2.release()
     cv2.destroyAllWindows()
     return JsonResponse({'img_path1': './static/photo.jpg', 'img_path2': './static/ocr_result.jpg'})
 
