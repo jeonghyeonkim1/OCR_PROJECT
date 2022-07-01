@@ -44,6 +44,7 @@ if 'question' not in st.session_state:
 
     with db.cursor() as cursor:
         cursor.execute(sql)
+        rand_sent = cursor.fetch_i
 
 @st.cache(allow_output_mutation=True)
 def load_model():
