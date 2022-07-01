@@ -24,11 +24,17 @@
     
 </script>
     <style>
-        td {
-            border:1px solid black;
+        #tr1 td {
+            border:3px solid #b9c1d7;
+            border-radius:10px;
         }
-        #output{
-            width:300px;
+        #output, #cam{
+            width:520px;
+            height:520px;
+        }
+        #btn_div{
+            text-align:center;
+            padding:60px;
         }
     </style>
 
@@ -39,24 +45,30 @@
 <body class="container" style='overflow: hidden;'>
     <div class='rounded vh-100 m-2 p-2 d-flex justify-content-center align-items-center bg-light'>
         <table>
-            <tr>
-                <td width='30px'>
-                    캠화면 출력됩니다..
+            <tr id='tr1'>
+                <td>
+                    <div style='transform: rotate(-90deg); width: 120px;'><h5>OCR result</h5></div>
                 </td>
-                <td width='50%'>
+                <td>
                     <div id='cam'>
                         <img src="" alt="">
                     </div>
                 </td>
                 <td>
-                    <div id='output' style="display: inline-block; top: 4px; position: relative ;border: dotted 1px #ccc; padding: 2px;">
+                    <div id='output'>
+                        <img src="" alt="">
                     </div>
                 </td>
             </tr>
-        </table>
-        <div id='btn_div'>
-            <button type='button' id='save' style=''>다시실행</button>
-        </div> 
+            <tr>
+                <td colspan='3'>
+                    <div id='btn_div'>
+                        <button class='btn btn-outline-secondary btn-lg' type='button'>Home</button>
+                        <button class='btn btn-secondary btn-lg' type='button' id='save'>Restart</button>
+                    </div>
+                </td>
+            </tr>
+        </table> 
     </div>
 </body>
 
