@@ -15,7 +15,7 @@ def make_sent_table():
             cursor.execute(sql)
 
         sql = '''
-        ALTER TABLE chatbot AUTO_INCREMENT=1
+        ALTER TABLE rand_sent AUTO_INCREMENT=1
         '''
         with db.cursor() as cursor:
             cursor.execute(sql)
