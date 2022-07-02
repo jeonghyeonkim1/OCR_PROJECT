@@ -10,7 +10,7 @@ import cv2
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pytesseract
+import time
 import pymysql
 
 DB_HOST = "localhost"
@@ -25,11 +25,11 @@ result_texts = []
 if 'typing' not in st.session_state:
 	st.session_state.typing = ''
 
+if 'skip' not in st.session_state:
+	st.session_state.skip = '0'
+
 if 'success' not in st.session_state:
 	st.session_state.success = '0'
-
-if 'space' not in st.session_state:
-	st.session_state.space = '0'
 
 if 'question' not in st.session_state:
     db = pymysql.connect(
@@ -47,6 +47,8 @@ if 'question' not in st.session_state:
     with db.cursor() as cursor:
         cursor.execute(sql)
         st.session_state.question = cursor.fetchone()[0]
+    
+    db.close()
 
 @st.cache(allow_output_mutation=True)
 def load_model():
@@ -58,16 +60,40 @@ def load_model():
     return model, list(character)
 
 model, idx2char = load_model()
-print(st.session_state.success)
+
+if st.session_state.success == '1':
+    st.success('성공하셨습니다!! 다음 문제를 푸시겠습니까?')
+    if st.button("넹!!!!"):
+        db = pymysql.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            passwd=DB_PASSWORD,
+            db=DB_NAME,
+            charset='utf8'
+        )
+
+        sql = f'''
+            SELECT sent FROM rand_sent WHERE sent != '{st.session_state.question} ORDER BY RAND()'
+        '''
+
+        with db.cursor() as cursor:
+            cursor.execute(sql)
+            st.session_state.question = cursor.fetchone()[0]
+        
+        db.close()
+
+        st.session_state.success = '0'
+        st.session_state.typing = ''
+
+    if st.session_state.success != '0':
+        st.stop()
 
 st.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
-if st.session_state.success == '1':
-    st.success('성공하였습니다.')
-elif st.session_state.success == "-1":
+if len(st.session_state.typing) == len(st.session_state.question):
     st.exception(RuntimeError("틀렸습니다."))
 
 col1, col2 = st.columns(2)
-btn1, btn2, btn3, btn4 = st.columns(4)
+btn1, btn2, btn3, btn4, btn5 = st.columns(5)
 
 drawing_mode = st.sidebar.selectbox(
     "Drawing tool:",
@@ -166,10 +192,21 @@ else:
             display_toolbar=st.sidebar.checkbox("Display toolbar", True),
             key='canvas'
         )
-        with btn1:
-            if st.button("띄어쓰기"):
-                st.session_state.typing += " "
-                st.session_state.space = "1"
+
+    with btn2:
+        if st.button("띄어쓰기"):
+            st.session_state.typing += " "
+            st.session_state.skip = "1"
+
+    with btn3:
+        if st.button("지움"):
+            st.session_state.typing = st.session_state.typing[:-1]
+            st.session_state.skip = "1"
+
+    with btn4:
+        if st.button("초기화"):
+            st.session_state.typing = ""
+            st.session_state.skip = "1"
 
     if canvas.image_data is not None:
 
@@ -187,15 +224,26 @@ else:
         y = model.predict(x).squeeze()
         result = tf.argmax(y)
         
-        # show result
-
-        st.write(f' ## Result: {idx2char[result]}')
-        if st.session_state.space == "0" or st.session_state.success == "0":
-            st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
-        elif st.session_state.success == "1" or st.session_state.success == "-1":
-            st.session_state.success = "0"
+        if st.session_state.skip == "1":
+            st.session_state.skip = "0"
         else:
-            st.session_state.space = "0"
+            st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
+
+        with col2:
+            message = st.text_area(
+                label = '',
+                value = st.session_state.typing,
+                height = 288,
+                disabled = True
+            )
+
+        if st.session_state.typing == st.session_state.question:
+            st.session_state.success = '1'
+        else:
+            st.session_state.success = '0'
+
+        # show result
+        st.write(f' ## Result: {idx2char[result]}' if idx2char[result] != '랬' and idx2char[result] != '웝' else ' ## 글자를 적어주세요!')
 
         # show prediction of most five
         most_arg = y.argsort()[::-1][:5]
@@ -218,22 +266,6 @@ else:
             alpha=0.5
         )
         st.pyplot(fig)
-        
-        with btn3:
-            if st.button("초기화"):
-                st.session_state.typing = ""
 
-        with btn4:
-            if st.button("제출"):
-                if st.session_state.typing == st.session_state.question:
-                    st.session_state.success = '1'
-                    st.session_state.typing = ''
-                else:
-                    st.session_state.success = '-1'
-
-        with col2:
-            message = st.text_area(
-                label = '',
-                value = st.session_state.typing,
-                height = 288
-            )
+            
+                    

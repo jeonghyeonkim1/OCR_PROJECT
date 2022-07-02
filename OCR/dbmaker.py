@@ -5,7 +5,7 @@ DB_PASSWORD = "1234"
 DB_NAME = "mydb118"
 
 def make_sent_table():
-    rand_sent = ["안녕하세요", "감사해요", "잘있어요"]
+    rand_sent = ["안녕하세요", "감사해요", "잘 있어요", "다시 만나요"]
 
     def all_clear_train_data(db):
         sql = '''
