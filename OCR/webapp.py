@@ -21,10 +21,12 @@ DB_NAME = "mydb118"
 # st.snow()
 sns.set(rc = {'figure.figsize':(15,8)}, font_scale = 2)
 result_texts = []
-st.markdown("<style>button {width: 230px}</style>", unsafe_allow_html=True)
 
 if 'typing' not in st.session_state:
 	st.session_state.typing = ''
+
+if 'success' not in st.session_state:
+	st.session_state.success = '0'
 
 if 'space' not in st.session_state:
 	st.session_state.space = '0'
@@ -44,7 +46,7 @@ if 'question' not in st.session_state:
 
     with db.cursor() as cursor:
         cursor.execute(sql)
-        rand_sent = cursor.fetch_i
+        st.session_state.question = cursor.fetchone()[0]
 
 @st.cache(allow_output_mutation=True)
 def load_model():
@@ -54,7 +56,15 @@ def load_model():
     model.load_weights(saved_model)
     
     return model, list(character)
+
 model, idx2char = load_model()
+print(st.session_state.success)
+
+st.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
+if st.session_state.success == '1':
+    st.success('성공하였습니다.')
+elif st.session_state.success == "-1":
+    st.exception(RuntimeError("틀렸습니다."))
 
 col1, col2 = st.columns(2)
 btn1, btn2, btn3, btn4 = st.columns(4)
@@ -178,65 +188,52 @@ else:
         result = tf.argmax(y)
         
         # show result
-        if idx2char[result] != "랬" and idx2char[result] != "웝":
-            st.write(f' ## Result: {idx2char[result]}')
-            if st.session_state.space == "0":
-                st.session_state.typing += idx2char[result]
-            else:
-                st.session_state.space = "0"
 
-            # show prediction of most five
-            most_arg = y.argsort()[::-1][:5]
-            most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
-            chars = [f'{idx2char[idx]}' for idx in most_arg]
-            
-            chart_data = pd.DataFrame(
-                np.array([most_val, chars]).T,
-                columns=['Prob(%)', 'Pred']
-            )
-
-            font_path = "c:/Windows/Fonts/malgun.ttf"
-            font = font_manager.FontProperties(fname=font_path).get_name()
-            rc('font', family=font)
-            fig, ax = plt.subplots()
-            ax.bar(
-                chart_data['Pred'],
-                chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
-                color='red',
-                alpha=0.5
-            )
-            st.pyplot(fig)
-            
-            with btn3:
-                if st.button("초기화"):
-                    st.session_state.typing = ""
-
-            with btn4:
-                if st.button("제출"):
-                    st.session_state.typing += " "
-
-            with col2:
-                message = st.text_area(
-                    label = '',
-                    value = st.session_state.typing,
-                    height = 288
-                )
-
+        st.write(f' ## Result: {idx2char[result]}')
+        if st.session_state.space == "0" or st.session_state.success == "0":
+            st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
+        elif st.session_state.success == "1" or st.session_state.success == "-1":
+            st.session_state.success = "0"
         else:
-            st.write(' 문자를 작성해주세요~ ')
-            
-            with btn3:
-                if st.button("초기화"):
-                    st.session_state.typing = ""
+            st.session_state.space = "0"
 
-            with btn4:
-                if st.button("제출"):
-                    st.session_state.typing += " "
-
-            with col2:
-                message = st.text_area(
-                    label = '',
-                    value = st.session_state.typing,
-                    height = 288
-                )
+        # show prediction of most five
+        most_arg = y.argsort()[::-1][:5]
+        most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
+        chars = [f'{idx2char[idx]}' for idx in most_arg]
         
+        chart_data = pd.DataFrame(
+            np.array([most_val, chars]).T,
+            columns=['Prob(%)', 'Pred']
+        )
+
+        font_path = "c:/Windows/Fonts/malgun.ttf"
+        font = font_manager.FontProperties(fname=font_path).get_name()
+        rc('font', family=font)
+        fig, ax = plt.subplots()
+        ax.bar(
+            chart_data['Pred'],
+            chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
+            color='red',
+            alpha=0.5
+        )
+        st.pyplot(fig)
+        
+        with btn3:
+            if st.button("초기화"):
+                st.session_state.typing = ""
+
+        with btn4:
+            if st.button("제출"):
+                if st.session_state.typing == st.session_state.question:
+                    st.session_state.success = '1'
+                    st.session_state.typing = ''
+                else:
+                    st.session_state.success = '-1'
+
+        with col2:
+            message = st.text_area(
+                label = '',
+                value = st.session_state.typing,
+                height = 288
+            )
