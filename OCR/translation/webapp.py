@@ -337,8 +337,7 @@ if bg_image != None:
         # Every form must have a submit button.
         submitted = st.form_submit_button("검색")
         if submitted:
-            for i in options:
-                st.write(f"선택하신 매장: {i}")
+            st.write(f"선택하신 매장: {' '.join(options)}")
 
 
 else:
