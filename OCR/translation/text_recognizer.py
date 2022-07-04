@@ -1,11 +1,4 @@
-from modules.methods import *
-import string
-import argparse
-import os
-import torch
-import torch.backends.cudnn as cudnn
-import torch.utils.data
-import torch.nn.functional as F
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

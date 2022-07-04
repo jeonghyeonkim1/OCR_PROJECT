@@ -9,6 +9,8 @@ from natsort import natsorted
 from PIL import Image
 from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
+from torch.autograd import Variable
+import time
 import tensorflow as tf
 import torchvision.transforms as transforms
 import torch.nn as nn
@@ -24,6 +26,57 @@ import re
 import six
 import math
 import lmdb
+
+
+def test_net(args, net, image, text_threshold, link_threshold, low_text, cuda, poly, refine_net=None):
+    t0 = time.time()
+
+    # resize
+    img_resized, target_ratio, size_heatmap = resize_aspect_ratio(
+        image, args.canvas_size, interpolation=cv2.INTER_LINEAR, mag_ratio=args.mag_ratio)
+    ratio_h = ratio_w = 1 / target_ratio
+
+    # preprocessing
+    x = normalizeMeanVariance(img_resized)
+    x = torch.from_numpy(x).permute(2, 0, 1)    # [h, w, c] to [c, h, w]
+    x = Variable(x.unsqueeze(0))                # [c, h, w] to [b, c, h, w]
+    if cuda:
+        x = x.cuda()
+
+    # forward pass
+    with torch.no_grad():
+        y, feature = net(x)
+
+    # make score and link map
+    score_text = y[0, :, :, 0].cpu().data.numpy()
+    score_link = y[0, :, :, 1].cpu().data.numpy()
+
+    # refine link
+    if refine_net is not None:
+        with torch.no_grad():
+            y_refiner = refine_net(y, feature)
+        score_link = y_refiner[0, :, :, 0].cpu().data.numpy()
+
+    t0 = time.time() - t0
+    t1 = time.time()
+
+    # Post-processing
+    boxes, polys = getDetBoxes(
+        score_text, score_link, text_threshold, link_threshold, low_text, poly)
+
+    # coordinate adjustment
+    boxes = adjustResultCoordinates(boxes, ratio_w, ratio_h)
+    polys = adjustResultCoordinates(polys, ratio_w, ratio_h)
+    for k in range(len(polys)):
+        if polys[k] is None:
+            polys[k] = boxes[k]
+
+    t1 = time.time() - t1
+
+    if args.show_time:
+        print("\ninfer/postproc time : {:.3f}/{:.3f}".format(t0, t1))
+
+    return boxes, polys
 
 
 def VGG_FeatureExtractor(num_class, input_shape=(32, 32, 3), output_channel=512):
@@ -1019,7 +1072,7 @@ def list_files(in_path):
     # gt_files.sort()
     return img_files, mask_files, gt_files
 
-def saveResult(img_file, img, boxes, dirname='./result/', verticals=None, texts=None):
+def saveResult(img, boxes, verticals=None, texts=None):
         """ save text detection result one by one
         Args:
             img_file (str): image file name
@@ -1032,93 +1085,74 @@ def saveResult(img_file, img, boxes, dirname='./result/', verticals=None, texts=
 
         img = np.array(img)
 
-        # make result file list
-        filename, file_ext = os.path.splitext(os.path.basename(img_file))
+        file_path = './result'
+        file_name = os.listdir(file_path)
+        if len(file_name) > 0:
+            for f in file_name:
+                os.remove(os.path.join(file_path, f))
 
-        # 이미지 위치 정보 저장하는 곳!!
-        res_file = dirname + "res_" + filename + '.txt'
+        for i, box in enumerate(boxes):
+            poly = np.array(box).astype(np.int32).reshape((-1))
 
-        # 컨투어 따서 저장하는 곳!!
-        res_img_file = dirname + "res_" + filename + '.jpg'
+            # 좌상 Y & 우상 Y    => poly[1], poly[3]  y값이 더 작은게 긴 것
+            # 우상 X & 우하 X    => poly[2], poly[4]  x값이 더 큰게 긴 것
+            # 우하 Y & 좌하 Y    => poly[5], poly[-1]  y값이 더 큰게 긴 것
+            # 좌하 X & 좌상 X    => poly[-2], poly[0]  x값이 더 작은게 긴 것
+            
+            if poly[1] > poly[3]:
+                poly[1] = poly[3]
+            else:
+                poly[3] = poly[1]
 
-        if not os.path.isdir(dirname):
-            os.mkdir(dirname)
+            if poly[2] > poly[4]:
+                poly[4] = poly[2]
+            else:
+                poly[2] = poly[4]
 
-        with open(res_file, 'w') as f:
-            for i, box in enumerate(boxes):
-                poly = np.array(box).astype(np.int32).reshape((-1))
+            if poly[5] > poly[-1]:
+                poly[-1] = poly[5]
+            else:
+                poly[5] = poly[-1]
 
-                # 좌상 Y & 우상 Y    => poly[1], poly[3]  y값이 더 작은게 긴 것
-                # 우상 X & 우하 X    => poly[2], poly[4]  x값이 더 큰게 긴 것
-                # 우하 Y & 좌하 Y    => poly[5], poly[-1]  y값이 더 큰게 긴 것
-                # 좌하 X & 좌상 X    => poly[-2], poly[0]  x값이 더 작은게 긴 것
-                
-                if poly[1] > poly[3]:
-                    poly[1] = poly[3]
-                else:
-                    poly[3] = poly[1]
+            if poly[-2] > poly[0]:
+                poly[-2] = poly[0]
+            else:
+                poly[0] = poly[-2]
 
-                if poly[2] > poly[4]:
-                    poly[4] = poly[2]
-                else:
-                    poly[2] = poly[4]
+            w, h = poly[2] - poly[0], poly[-3] - poly[1]
 
-                if poly[5] > poly[-1]:
-                    poly[-1] = poly[5]
-                else:
-                    poly[5] = poly[-1]
+            poly = poly.reshape(-1, 2)
 
-                if poly[-2] > poly[0]:
-                    poly[-2] = poly[0]
-                else:
-                    poly[0] = poly[-2]
+            srcQuad = np.array([
+                poly[0], poly[1], 
+                poly[2], poly[3],
+            ]).astype(np.float32)
 
-                w, h = poly[2] - poly[0], poly[-3] - poly[1]
+            dstQuad = np.array([
+                [0, 0], [w, 0],
+                [w, h], [0, h],
+            ]).astype(np.float32)
 
-                strResult = ','.join([str(p) for p in poly]) + '\r\n'
-                f.write(strResult)
+            pers = cv2.getPerspectiveTransform(srcQuad, dstQuad)  # 변환 행렬 3x3 이 리턴된다
+            dst = cv2.warpPerspective(img, pers, (w, h))
 
-                poly = poly.reshape(-1, 2)
+            cnt = 0
+            while os.path.exists(os.path.join('./result', f'{cnt}.jpg')):
+                cnt += 1
 
-                srcQuad = np.array([
-                    poly[0], poly[1], 
-                    poly[2], poly[3],
-                ]).astype(np.float32)
+            cv2.imwrite(os.path.join('./result', f'{cnt}.jpg'), dst)
 
-                dstQuad = np.array([
-                    [0, 0], [w, 0],
-                    [w, h], [0, h],
-                ]).astype(np.float32)
-
-                pers = cv2.getPerspectiveTransform(srcQuad, dstQuad)  # 변환 행렬 3x3 이 리턴된다
-                dst = cv2.warpPerspective(img, pers, (w, h))
-
-                cnt = 0
-                while os.path.exists(os.path.join('./result', f'{cnt}.jpg')):
-                    cnt += 1
-
-                cv2.imwrite(os.path.join('./result', f'{cnt}.jpg'), dst)
-
-                # cv2.polylines(img, [poly.reshape((-1, 1, 2))], True, color=(0, 0, 255), thickness=2)
-                ptColor = (0, 255, 255)
-                if verticals is not None:
-                    if verticals[i]:
-                        ptColor = (255, 0, 0)
-                
-                
-
-                if texts is not None:
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    font_scale = 0.5
-                    cv2.putText(img, "{}".format(texts[i]), (poly[0][0]+1, poly[0][1]+1), font, font_scale, (0, 0, 0), thickness=1)
-                    cv2.putText(img, "{}".format(texts[i]), tuple(poly[0]), font, font_scale, (0, 255, 255), thickness=1)
-
-        # Save result image
-        cv2.imwrite(res_img_file, img)
+            # cv2.polylines(img, [poly.reshape((-1, 1, 2))], True, color=(0, 0, 255), thickness=2)
+            ptColor = (0, 255, 255)
+            if verticals is not None:
+                if verticals[i]:
+                    ptColor = (255, 0, 0)
+            
+            
 
 
-def loadImage(img_file):
-    img = io.imread(img_file)           # RGB order
+def loadImage(img):
+    # img = io.imread(img_file)           # RGB order
     if img.shape[0] == 2: img = img[0]
     if len(img.shape) == 2 : img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
     if img.shape[2] == 4:   img = img[:,:,:3]
@@ -1173,7 +1207,7 @@ def resize_aspect_ratio(img, square_size, interpolation, mag_ratio=1):
 
     return resized, ratio, size_heatmap
 
-def cvt2HeatmapImg(img):
-    img = (np.clip(img, 0, 1) * 255).astype(np.uint8)
-    img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
-    return img
+# def cvt2HeatmapImg(img):
+#     img = (np.clip(img, 0, 1) * 255).astype(np.uint8)
+#     img = cv2.applyColorMap(img, cv2.COLORMAP_JET)
+#     return img
