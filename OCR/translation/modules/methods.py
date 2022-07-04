@@ -27,7 +27,6 @@ import six
 import math
 import lmdb
 
-
 def test_net(args, net, image, text_threshold, link_threshold, low_text, cuda, poly, refine_net=None):
     t0 = time.time()
 
@@ -614,6 +613,7 @@ class Model(nn.Module):
         self.stages = {'Trans': opt.Transformation, 'Feat': opt.FeatureExtraction,
                        'Seq': opt.SequenceModeling, 'Pred': opt.Prediction}
 
+
         """ Transformation """
         if opt.Transformation == 'TPS':
             self.Transformation = TPS_SpatialTransformerNetwork(
@@ -1136,20 +1136,17 @@ def saveResult(img, boxes, verticals=None, texts=None):
             pers = cv2.getPerspectiveTransform(srcQuad, dstQuad)  # 변환 행렬 3x3 이 리턴된다
             dst = cv2.warpPerspective(img, pers, (w, h))
 
-            cnt = 0
-            while os.path.exists(os.path.join('./result', f'{cnt}.jpg')):
+            cnt = 1
+            while os.path.exists(os.path.join('./result', f'demo_{cnt}.jpg')):
                 cnt += 1
 
-            cv2.imwrite(os.path.join('./result', f'{cnt}.jpg'), dst)
+            cv2.imwrite(os.path.join('./result', f'demo_{cnt}.jpg'), dst)
 
             # cv2.polylines(img, [poly.reshape((-1, 1, 2))], True, color=(0, 0, 255), thickness=2)
             ptColor = (0, 255, 255)
             if verticals is not None:
                 if verticals[i]:
                     ptColor = (255, 0, 0)
-            
-            
-
 
 def loadImage(img):
     # img = io.imread(img_file)           # RGB order
