@@ -97,7 +97,7 @@ if st.session_state.success == '1':
     if st.session_state.success != '0':
         st.stop()
 
-con = st.container
+quest = st.empty()
 
 if len(st.session_state.typing) == len(st.session_state.question):
     st.exception(RuntimeError("틀렸습니다."))
@@ -342,9 +342,8 @@ if bg_image != None:
 
 
 else:
-    with con:
-        st.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
-        
+    quest.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
+
     with col1:
         st.write(' ')
         st.write(' ')
