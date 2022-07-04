@@ -1,4 +1,3 @@
-from model import VGG_FeatureExtractor
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from matplotlib import font_manager, rc
@@ -12,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 import pymysql
+from modules.methods import VGG_FeatureExtractor
 
 DB_HOST = "localhost"
 DB_USER = "myuser118"

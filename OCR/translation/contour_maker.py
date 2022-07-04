@@ -6,10 +6,10 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 import cv2
 import numpy as np
-from methods import *
+from modules.methods import *
 
 
-weight_path = './weights'
+weight_path = 'C:/models/contour_maker'
 weight_name = os.listdir(weight_path)[0]
 weight_loc = os.path.join(weight_path, weight_name)
 

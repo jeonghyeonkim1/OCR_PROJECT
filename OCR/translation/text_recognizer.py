@@ -1,15 +1,11 @@
+from modules.methods import *
 import string
 import argparse
 import os
-
 import torch
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
-
-from utils import CTCLabelConverter, AttnLabelConverter
-from dataset import RawDataset, AlignCollate
-from model import Model
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -93,12 +89,12 @@ def demo(opt):
             log.close()
 
 if __name__ == '__main__':
-    model_path = './model'
+    model_path = 'C:/models/text_recognizer'
     model_name = os.listdir(model_path)[0]
     model_loc = os.path.join(model_path, model_name)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_folder', default='demo_image/', help='path to image_folder which contains text images')
+    parser.add_argument('--image_folder', default='result/', help='path to image_folder which contains text images')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
     parser.add_argument('--saved_model', default=model_loc, help="path to saved_model to evaluation")
