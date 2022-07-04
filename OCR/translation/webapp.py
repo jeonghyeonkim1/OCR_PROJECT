@@ -2,6 +2,8 @@ from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 from matplotlib import font_manager, rc
 from functools import reduce
+from modules.methods import *
+from torch.autograd import Variable
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -9,9 +11,12 @@ import cv2
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-import time
 import pymysql
-from modules.methods import VGG_FeatureExtractor
+import os
+import time
+import argparse
+import torch
+import torch.backends.cudnn as cudnn
 
 DB_HOST = "localhost"
 DB_USER = "myuser118"
@@ -108,8 +113,7 @@ bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
 realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
 if bg_image != None:
-    st.write(' ')
-    st.write(' ')
+    # net = CRAFT()
 
     img = np.array(Image.open(bg_image))
     img=cv2.cvtColor(img, cv2.COLOR_RGB2BGR)

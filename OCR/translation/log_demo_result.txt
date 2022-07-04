@@ -190,3 +190,14 @@ demo_image/demo_14.jpg   	cafrepascucci            	0.4003
 demo_image/demo_15.jpg   	mart                     	1.0000
 demo_image/demo_16.png   	text                     	1.0000
 demo_image/demo_17.png   	nontingrater             	0.0001
+--------------------------------------------------------------------------------
+image_path               	predicted_labels         	confidence score
+--------------------------------------------------------------------------------
+result/0.jpg             	pique                    	0.9990
+result/1.jpg             	gelato                   	0.9986
+result/2.jpg             	coeur                    	0.9957
+result/3.jpg             	du                       	0.9996
+result/4.jpg             	fond                     	0.9955
+result/5.jpg             	du                       	0.9914
+result/res_1.jpg         	anamacous                	0.0010
+result/res_1_mask.jpg    	consuptorations          	0.0000
