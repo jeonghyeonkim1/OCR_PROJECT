@@ -1,5 +1,4 @@
 from PIL import Image
-from django.shortcuts import render
 from streamlit_drawable_canvas import st_canvas
 from matplotlib import font_manager, rc
 from modules.methods import *
@@ -31,6 +30,9 @@ DB_NAME = "mydb118"
 # st.snow()
 sns.set(rc={'figure.figsize': (15, 8)}, font_scale=2)
 result_texts = []
+
+if 'imgupload' not in st.session_state:
+    st.session_state.imgupload = '0'
 
 if 'typing' not in st.session_state:
     st.session_state.typing = ''
@@ -108,21 +110,24 @@ if len(st.session_state.typing) == len(st.session_state.question):
 col1, col2 = st.columns(2)
 btn1, btn2, btn3, btn4, btn5 = st.columns(5)
 
-drawing_mode = st.sidebar.selectbox(
-    "Drawing tool:",
-    ("freedraw", "line", "rect", "circle", "transform", "polygon", "point"),
+mode = st.sidebar.selectbox(
+    "주제",
+    ("한글 공부", "메뉴 찾기"),
 )
-stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 8)
-if drawing_mode == 'point':
-    point_display_radius = st.sidebar.slider(
-        "Point display radius: ", 1, 25, 8)
-stroke_color = st.sidebar.color_picker("Stroke color hex: ")
-bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
-bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
-realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
-if bg_image != None:
+if mode == '메뉴 찾기':
+    if st.session_state.imgupload == '0':
+        bg_image = st.file_uploader("Background image:", type=["png", "jpg"])
+        st.session_state.imgupload = '1'
+    else:
+        bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
+        st.session_state.imgupload = '0'
+
+    if bg_image == None:
+        st.stop()
+
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+    
     # image info -------------------------------------------------
     img = np.array(Image.open(bg_image))
     height, width, channel = img.shape
@@ -268,7 +273,7 @@ if bg_image != None:
     opt.num_gpu = torch.cuda.device_count()
 
     def demo(opt):
-        """ model configuration """
+        # model configuration
         if 'CTC' in opt.Prediction:
             converter = CTCLabelConverter(opt.character)
         else:
@@ -358,11 +363,19 @@ if bg_image != None:
                     for i in data[1::2]:
                         st.image(i[1])
                         st.write(f'[{i[0]}]({i[2]})')
-
-             
-
-            
+  
 else:
+    drawing_mode = st.sidebar.selectbox(
+        "Drawing tool:",
+        ("freedraw", "line", "rect", "circle", "transform", "polygon", "point"),
+    )
+    stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 8)
+    if drawing_mode == 'point':
+        point_display_radius = st.sidebar.slider(
+            "Point display radius: ", 1, 25, 8)
+    stroke_color = st.sidebar.color_picker("Stroke color hex: ")
+    bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
+    realtime_update = st.sidebar.checkbox("Update in realtime", False)
     quest.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
 
     with col1:
@@ -373,7 +386,6 @@ else:
             stroke_width=stroke_width,
             stroke_color=stroke_color,
             background_color=bg_color,
-            background_image=Image.open(bg_image) if bg_image else None,
             update_streamlit=realtime_update,
             width=288,
             height=288,
