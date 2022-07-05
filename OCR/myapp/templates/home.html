@@ -21,8 +21,11 @@
     h6{
         padding-top:15px;
     }
-    .container tbody tr {
-        height:80px;
+    #th2 {
+        padding:18px;
+    }
+    #th1 {
+        padding: 24px;
     }
     .container thead{
         height:200px;
@@ -37,7 +40,7 @@
         margin-bottom:50px;
     }
     .container tbody td {
-        padding-top:112px;
+        padding-top: 73px;
     }
     .rounded {
         border-radius: 1.25rem!important;
@@ -46,23 +49,26 @@
         border:10px solid #7a8fa424;
         border-radius: 90px;
         padding:10px;
-        margin-top:70px;
+        margin-top:22px;
     }
     #box1{
         border:13px solid #49507fc7;
+        padding: 22px;
+
     }
     #box2{
         border:13px solid #7eb0c1c7;
+        padding: 26px;
     }
     #menu1{
         float:left;
-        width:500px;
-        height:700px;
+        width:390px;
+        height:600px;
     }
     #menu2{
         display:inline-block;
-        width:500px;
-        height:700px;
+        width:400px;
+        height:600px;
         margin-left:30px;
     }
     #btn1{
@@ -78,6 +84,7 @@
         height:70px;
         background-color: #7eb0c1c7;
         color:white;
+        margin-top: 9px;
     }
     #btn1:hover {
         background-color: #49507f;
@@ -184,6 +191,9 @@
       opacity:1;
       width: 120%;
     }
+    .table>:not(:first-child) {
+        border-top: 1px; solid currentColor;
+    }
 </style>
 {% endblock %}
 
@@ -196,14 +206,14 @@
         <h3>ㅤText OCR by recognizing objectㅤ</h3>
         <h4><i class="fa-solid fa-quote-right"></i></h4>
     </div>
-    <div class='rounded vh-100 m-2 p-2 d-flex justify-content-center align-items-center bg-light'>
+    <div class='rounded vh-100 d-flex justify-content-center align-items-center bg-light'>
         
         <div id='menu1'>
-            <div class="rounded vh-50 m-5 p-5 d-flex justify-content-center align-items-center" id='box1'>
+            <div class="rounded vh-50 d-flex justify-content-center align-items-center" id='box1'>
                 <table class="table text-center">
                     <thead>
                         <tr>
-                            <th>
+                            <th id='th1'>
                                 <i class="display-3 fa-solid fa-arrow-right-arrow-left fa-beat"></i>
                                 <div><h3>Translation</h3></div>
                             </th>
@@ -211,7 +221,7 @@
                     </thead>    
                     <tbody>
                         <tr>
-                            <td> 
+                            <td style='padding-top:78px;'> 
                                 <a id='btn1' style='display:inline-block;padding:20px 40px 20px 40px;' href='http://localhost:8501/'>Start</a>
                             </td>
                         </tr>
@@ -220,11 +230,11 @@
             </div>
         </div>
         <div id='menu2'>
-            <div class="rounded vh-50 m-5 p-5 d-flex justify-content-center align-items-center"  id='box2'>
+            <div class="rounded vh-50 d-flex justify-content-center align-items-center"  id='box2'>
                 <table class="table text-center">
                     <thead>
                         <tr>
-                            <th>
+                            <th id='th2'>
                                 <i class="display-3 fa-solid fa-book fa-beat"></i>
                                 <div><h3>Book Recommendation</h3></div>
                             </th>
@@ -233,7 +243,7 @@
                         
                     <tbody>
                         <tr>
-                            <td> 
+                            <td>
                                 <button style='display:inline-block;padding:20px 40px 20px 40px; border:none'  id='btn2'>Start</button>
                             </td>
                         </tr>
