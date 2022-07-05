@@ -1,4 +1,5 @@
 from PIL import Image
+from django.shortcuts import render
 from streamlit_drawable_canvas import st_canvas
 from matplotlib import font_manager, rc
 from modules.methods import *
@@ -20,6 +21,7 @@ from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
+import streamlit.components.v1 as components
 
 DB_HOST = "localhost"
 DB_USER = "myuser118"
@@ -27,17 +29,17 @@ DB_PASSWORD = "1234"
 DB_NAME = "mydb118"
 
 # st.snow()
-sns.set(rc = {'figure.figsize':(15,8)}, font_scale = 2)
+sns.set(rc={'figure.figsize': (15, 8)}, font_scale=2)
 result_texts = []
 
 if 'typing' not in st.session_state:
-	st.session_state.typing = ''
+    st.session_state.typing = ''
 
 if 'skip' not in st.session_state:
-	st.session_state.skip = '0'
+    st.session_state.skip = '0'
 
 if 'success' not in st.session_state:
-	st.session_state.success = '0'
+    st.session_state.success = '0'
 
 if 'question' not in st.session_state:
     db = pymysql.connect(
@@ -55,7 +57,7 @@ if 'question' not in st.session_state:
     with db.cursor() as cursor:
         cursor.execute(sql)
         st.session_state.question = cursor.fetchone()[0]
-    
+
     db.close()
 
 
@@ -65,8 +67,9 @@ def load_model():
     saved_model = 'C:/models/kor_model/best_loss_0.04_model.h5'
     model = VGG_FeatureExtractor(len(character))
     model.load_weights(saved_model)
-    
+
     return model, list(character)
+
 
 model, idx2char = load_model()
 
@@ -88,7 +91,7 @@ if st.session_state.success == '1':
         with db.cursor() as cursor:
             cursor.execute(sql)
             st.session_state.question = cursor.fetchone()[0]
-        
+
         db.close()
 
         st.session_state.success = '0'
@@ -111,7 +114,8 @@ drawing_mode = st.sidebar.selectbox(
 )
 stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 8)
 if drawing_mode == 'point':
-    point_display_radius = st.sidebar.slider("Point display radius: ", 1, 25, 8)
+    point_display_radius = st.sidebar.slider(
+        "Point display radius: ", 1, 25, 8)
 stroke_color = st.sidebar.color_picker("Stroke color hex: ")
 bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
 bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
@@ -177,12 +181,12 @@ if bg_image != None:
         print('Loading weights of refiner from checkpoint (' + args.refiner_model + ')')
         if args.cuda:
             refine_net.load_state_dict(
-            	copyStateDict(torch.load(args.refiner_model)))
+                copyStateDict(torch.load(args.refiner_model)))
             refine_net = refine_net.cuda()
             refine_net = torch.nn.DataParallel(refine_net)
         else:
             refine_net.load_state_dict(copyStateDict(
-            	torch.load(args.refiner_model, map_location='cpu')))
+                torch.load(args.refiner_model, map_location='cpu')))
 
         refine_net.eval()
         args.poly = True
@@ -275,8 +279,8 @@ if bg_image != None:
             opt.input_channel = 3
         model = Model(opt)
         print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
-            opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
-            opt.SequenceModeling, opt.Prediction)
+              opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
+              opt.SequenceModeling, opt.Prediction)
         model = torch.nn.DataParallel(model).to(device)
 
         # load model
@@ -286,7 +290,8 @@ if bg_image != None:
         # prepare data. two demo images from https://github.com/bgshih/crnn#run-demo
         AlignCollate_demo = AlignCollate(
             imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
-        demo_data = RawDataset(root=opt.image_folder, opt=opt)  # use RawDataset
+        demo_data = RawDataset(root=opt.image_folder,
+                               opt=opt)  # use RawDataset
         demo_loader = torch.utils.data.DataLoader(
             demo_data, batch_size=opt.batch_size,
             shuffle=False,
@@ -338,8 +343,25 @@ if bg_image != None:
         submitted = st.form_submit_button("검색")
         if submitted:
             st.write(f"선택하신 매장: {' '.join(options)}")
+            if 'starbucks' in options:
+                df = pd.read_excel('excel/starbucks.xlsx')
+                data = [[i[j] for i in [[i for i in df[col]] for col in df]]
+                        for j in range(len([[i for i in df[col]] for col in df][0]))]
+                menu1, menu2 = st.columns(2)
 
+                with menu1:
+                    for i in data[::2]:
+                        st.image(i[1])
+                        st.write(f'[{i[0]}]({i[2]})')
 
+                with menu2:
+                    for i in data[1::2]:
+                        st.image(i[1])
+                        st.write(f'[{i[0]}]({i[2]})')
+
+             
+
+            
 else:
     quest.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
 
@@ -381,7 +403,7 @@ else:
         # image load
         img = canvas.image_data.astype('uint8')
         img = cv2.resize(img, (32, 32))
-        
+
         # preprocess image
         x = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         x = np.array(x, dtype=np.float32)
@@ -391,7 +413,7 @@ else:
         # predict
         y = model.predict(x).squeeze()
         result = tf.argmax(y)
-        
+
         if st.session_state.skip == "1":
             st.session_state.skip = "0"
         else:
@@ -399,10 +421,10 @@ else:
 
         with col2:
             message = st.text_area(
-                label = '',
-                value = st.session_state.typing,
-                height = 288,
-                disabled = True
+                label='',
+                value=st.session_state.typing,
+                height=288,
+                disabled=True
             )
 
         if st.session_state.typing == st.session_state.question:
@@ -411,13 +433,14 @@ else:
             st.session_state.success = '0'
 
         # show result
-        st.write(f' ## Result: {idx2char[result]}' if idx2char[result] != '랬' and idx2char[result] != '웝' else ' ## 글자를 적어주세요!')
+        st.write(f' ## Result: {idx2char[result]}' if idx2char[result]
+                 != '랬' and idx2char[result] != '웝' else ' ## 글자를 적어주세요!')
 
         # show prediction of most five
         most_arg = y.argsort()[::-1][:5]
         most_val = [f'{y[idx]*100:.8f}' for idx in most_arg]
         chars = [f'{idx2char[idx]}' for idx in most_arg]
-        
+
         chart_data = pd.DataFrame(
             np.array([most_val, chars]).T,
             columns=['Prob(%)', 'Pred']
@@ -434,6 +457,3 @@ else:
             alpha=0.5
         )
         st.pyplot(fig)
-
-            
-                    
