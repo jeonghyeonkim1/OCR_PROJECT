@@ -2,7 +2,19 @@
 
 {% block src %}
 <script>
-   
+   $(function() {
+    $('#btn2').click(function() {
+        $.ajax({
+            url: '{% url "ocr:get_cam" %}',
+            success: function(res) {
+                alert("성공하였읍미다!!!!")
+            },
+            error: function(a, b, c) {
+                alert("실패하였읍미다!!!!")
+            }
+        })
+    })
+   })
 </script>
 <style>
 
@@ -222,7 +234,7 @@
                     <tbody>
                         <tr>
                             <td> 
-                                <a style='display:inline-block;padding:20px 40px 20px 40px;'  id='btn2' href='{% url "ocr:scan" %}'>Start</a>
+                                <button style='display:inline-block;padding:20px 40px 20px 40px; border:none'  id='btn2'>Start</button>
                             </td>
                         </tr>
                     </tbody>

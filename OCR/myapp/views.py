@@ -20,15 +20,32 @@ from cvlib.object_detection import draw_bbox
 def home(request):
     return render(request, 'home.html')
 
-def scan(request):            
+def scan(request):  
     return render(request, 'base2.html')
+
+def get_cam(request):
+    capture = cv2.VideoCapture(0)
+    print('camera open failed') if not capture.isOpened() else ''
+
+    while 1:
+        ret, frame = capture.read()
+        if not ret:
+            break
+
+        cv2.imshow('qwe', frame)
+        
+        if cv2.waitKey(1) == 13:
+            break
+
+    capture.release() 
+    cv2.destroyAllWindows()
+    return JsonResponse({})
 
 def cam(request):
     camera = cv2.VideoCapture(0)
 
     while True:
         ret, image = camera.read()
-
 
         if ret:
             bbox, label, conf = cv.detect_common_objects(image)
