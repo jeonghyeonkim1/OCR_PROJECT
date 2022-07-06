@@ -61,7 +61,11 @@ def get_cam(request):
         cv2.imwrite('./static/data/hi.jpg', frame)
 
         prediction = model.predict('./static/data/hi.jpg').json()['predictions']
-
+        if cv2.waitKey(1) == 27:
+            capture.release() 
+            cv2.destroyAllWindows()
+            return JsonResponse({"false"})
+        
         if len(prediction) > 0:
             prediction = prediction[0]
 
@@ -112,88 +116,90 @@ def get_cam(request):
                 pers = cv2.getPerspectiveTransform(srcQuad, dstQuad)
                 dst = cv2.warpPerspective(frame, pers, (w, h))
 
-                cv2.imwrite(os.path.join(file_path, f'contour.jpg'), dst)
+                cv2.imwrite('./static/contour_list/contour.jpg', dst)
+                
+                
+                # cv2.imshow('qwe', cv2.imread('./static/contour_list/contour.jpg'))
+                if cv2.waitKey(0) == 13:
+                    capture.release()
+                    cv2.destroyAllWindows()
+                    print('오이잉')
+                    # args = {
+                    #     "image": "./static/contour_list/contour.jpg",
+                    #     "langs": "en,ko",
+                    #     "gpu": -1
+                    # }
+                    # langs = args["langs"].split(",")
+                    # image = cv2.imread('./static/contour_list/contour.jpg')
+                    # reader = Reader(langs, gpu=args["gpu"] > 0)
+                    # results = reader.readtext(image, )
+                    # for (bbox, text, prob) in results:
+                    #     # display the OCR'd text and associated probability
+                    #     print("[INFO] {:.4f}: {}".format(prob, text))
 
-                cv2.imshow('qwe', cv2.imread('./static/contour_list/contour.jpg'))
+                    #     # unpack the bounding box
+                    #     (tl, tr, br, bl) = bbox
+                    #     tl = (int(tl[0]), int(tl[1]))
+                    #     tr = (int(tr[0]), int(tr[1]))
+                    #     br = (int(br[0]), int(br[1]))
+                    #     bl = (int(bl[0]), int(bl[1]))
 
-                cv2.waitKey()
-
-            break
+                    #     # cleanup the text and draw the box surrounding the text along
+                    #     # with the OCR'd text itself
+                    #     text = cleanup_text(text)
+                    #     cv2.rectangle(image, tl, br, (0, 255, 0), 2)
+                    #     cv2.putText(image, text, (tl[0], tl[1] - 10),
+                    #         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+                    # cv2.imwrite('./static/contour_list/textocr_result.jpg', image)
+                    # cv2.destroyAllWindows()
+                    return JsonResponse({})
+            elif prediction['class'] == 'book' and prediction['confidence'] <= 0.6:
+                print('제발')
+                pass
 
     capture.release() 
     cv2.destroyAllWindows()
     return JsonResponse({})
 
+
 def cam(request):
-    camera = cv2.VideoCapture(cv2.CAP_DSHOW+0)
-
-    while True:
-        ret, image = camera.read()
-        if ret:
-            bbox, label, conf = cv.detect_common_objects(image)
-            if 'book' in label:
-                lab_ind = label.index('book')
-                bbox=[bbox[lab_ind]]
-                label=[label[lab_ind]]
-                conf=[conf[lab_ind]]
-                if conf[0] >= 0.7:
-                    cv2.imwrite('./static/data/photo.jpg', image)
-                    cv2.destroyAllWindows()
-                    def cleanup_text(text):
-                        return "".join([c if ord(c) < 128 else "" for c in text]).strip()
-
-                    args = {
-                        "image": "./static/data/photo.jpg",
-                        "langs": "ko,en",
-                        "gpu": -1
-                    }
-
-                    langs = args["langs"].split(",")
-                    print("[INFO] OCR'ing with the following languages: {}".format(langs))
-
-                    image = cv2.imread(args["image"])
-
-
-                    print("[INFO] OCR'ing input image...")
-                    reader = Reader(langs, gpu=args["gpu"] > 0)
-                    results = reader.readtext(image)
-
-                    for (bbox, text, prob) in results:
-                        print("[INFO] {:.4f}: {}".format(prob, text))
-
-                        (tl, tr, br, bl) = bbox
-                        tl = (int(tl[0]), int(tl[1]))
-                        tr = (int(tr[0]), int(tr[1]))
-                        br = (int(br[0]), int(br[1]))
-                        bl = (int(bl[0]), int(bl[1]))
-
-                        text = cleanup_text(text)
-                        cv2.rectangle(image, tl, br, (0, 255, 0), 2)
-                        cv2.putText(image, text, (tl[0], tl[1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-                        cv2.imwrite('./static/data/ocr_result.jpg',image)
-                        cv2.destroyAllWindows()
-
-                        res = text
-                        return JsonResponse({'data': res})            
-            else:
-                bbox=[]
-                label=[]
-                conf=[]
-
-            out = draw_bbox(image, bbox, label, conf, write_conf=True)
-            cv2.imshow('Real-time object detection', out)
-        
-    camera.release()
-    cv2.destroyAllWindows()
-    return JsonResponse({})
+    return render(request, 'base2.html')
 
 
 def recommend(request):
-    content = {
-        'data':res,
-    }
-    return render(request, 'recommend.html',content)
+    return render(request, 'recommend.html')
 
 
+def cleanup_text(text):
+        return "".join([c if ord(c) < 128 else "" for c in text]).strip()
+
+def loading(request):
+    args = {
+            "image": "./static/contour_list/contour.jpg",
+            "langs": "en,ko",
+            "gpu": -1
+        }
+    langs = args["langs"].split(",")
+    image = cv2.imread('./static/contour_list/contour.jpg')
+    reader = Reader(langs, gpu=args["gpu"] > 0)
+    results = reader.readtext(image, )
+    for (bbox, text, prob) in results:
+        # display the OCR'd text and associated probability
+        print("[INFO] {:.4f}: {}".format(prob, text))
+
+        # unpack the bounding box
+        (tl, tr, br, bl) = bbox
+        tl = (int(tl[0]), int(tl[1]))
+        tr = (int(tr[0]), int(tr[1]))
+        br = (int(br[0]), int(br[1]))
+        bl = (int(bl[0]), int(bl[1]))
+
+        # cleanup the text and draw the box surrounding the text along
+        # with the OCR'd text itself
+        text = cleanup_text(text)
+        cv2.rectangle(image, tl, br, (0, 255, 0), 2)
+        cv2.putText(image, text, (tl[0], tl[1] - 10),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+    cv2.imwrite('./static/contour_list/textocr_result.jpg', image)
+    cv2.destroyAllWindows()
+    return render(request, 'loading.html')

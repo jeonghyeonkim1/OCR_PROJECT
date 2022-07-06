@@ -6,11 +6,16 @@
     $('#btn2').click(function() {
         $.ajax({
             url: '{% url "ocr:get_cam" %}',
+            data:'',
             success: function(res) {
-                alert("성공하였읍미다!!!!")
+                if(window.confirm('계속하시겠습니까')) {
+                    location.href= '{% url "ocr:loading" %}'
+                }else {
+                    alert('도서를 다시 비추어 주세요')
+                }
             },
             error: function(a, b, c) {
-                alert("실패하였읍미다!!!!")
+                alert("Please Restart")
             }
         })
     })

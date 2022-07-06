@@ -2,90 +2,27 @@
 
 {% block src %}
 {% load static %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-    integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
-    crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"
-    integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww=="
-    crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/async/3.2.0/async.min.js"
-    integrity="sha512-6K6+H87tLdCWvY5ml9ZQXLRlPlDEt8uXmtELhuJRgFyEDv6JvndWHg3jadJuBVGPEhhA2AAt+ROMC2V7EvTIWw=="
-    crossorigin="anonymous"></script>
-
-<script src="https://cdn.roboflow.com/0.2.22/roboflow.js"></script>
-
-
-
 <script src="{% static 'bs/js/html2canvas.js' %}"></script>
 
-<script>
-
-    $(function() {
-        $("#save").click(function() {
-            $.ajax({
-                url: '{% url "ocr:cam" %}',
-                type: 'GET',
-                data: {},
-                success: function(response) {
-                    alert('OCR 완료')
-                    $('#baseimg1').attr('src','/static/data/baseimg1.PNG')
-                    $("#recom_next").click(function(){
-                        location.href="http://127.0.0.1:8000/scan/recommend/"
-                    })  
-
-                },
-
-            })
-        })
-    })
-    $(function () {
-        const video = $("video")[0];
-
-        var model;
-        var cameraMode = "environment";
-        const startVideoStreamPromise = navigator.mediaDevices
-            .getUserMedia({
-                audio: false,
-                video: {
-                    facingMode: cameraMode
-                }
-            })
-            .then(function (stream) {
-                return new Promise(function (resolve) {
-                    video.srcObject = stream;
-                    video.onloadeddata = function () {
-                        video.play();
-                        resolve();
-                    };
-                });
-            });
-        var publishable_key = "BzyHkzKOlMSJcspr3EH2";
-        var toLoad = {
-            model: "chess-sample-m5hzq",
-            version: 3
-        };  
+<style>
+    #tr1 td {
+        border:3px solid #b9c1d7;
+        border-radius:10px;
+    }
+    #output, #cam{
+        width:520px;
+        height:520px;
+    }
+    #btn_div{
+        text-align:center;
+        padding:60px;
+    }
+    #tr1 img{
+        width:100%;
+        height:100%;
+    }
     
-
-</script>
-    <style>
-        #tr1 td {
-            border:3px solid #b9c1d7;
-            border-radius:10px;
-        }
-        #output, #cam{
-            width:520px;
-            height:520px;
-        }
-        #btn_div{
-            text-align:center;
-            padding:60px;
-        }
-        #tr1 img{
-            width:100%;
-            height:100%;
-        }
-        
-    </style>
+</style>
 
 {% endblock %}
 
@@ -110,21 +47,20 @@
                     <div style='transform: rotate(-90deg); width: 120px; color:#b9c1d7;'><h5>OCR result</h5></div>
                 </td>
                 <td>
-                    <div id='cam'>
-                        <video id="video" autoplay muted playsinline></video>
-                        <div id="fps"></div>
+                    <div id='output'>
+                        <img src="./static/contour_list/contour.jpg" alt="">
                     </div>
                 </td>
                 <td>
                     <div id='output'>
-                        <img src="/static/data/baseimg2.PNG" alt="">
+                        <img src="./static/contour_list/textocr_result.jpg" alt="">
                     </div>
                 </td>
             </tr>
             <tr>
                 <td colspan='3'>
                     <div id='btn_div'>
-                        <button class='btn btn-secondary btn-lg' type='button' id='save'>OCR</button>
+                        <button class='btn btn-secondary btn-lg' type='button' id='save'>추천도서 보러가기</button>
                     </div>
                 </td>
             </tr>
