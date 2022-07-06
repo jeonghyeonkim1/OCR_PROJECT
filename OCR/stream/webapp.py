@@ -379,8 +379,6 @@ else:
     quest.info(f'다음 문장을 입력하십시오 : {st.session_state.question}')
 
     with col1:
-        st.write(' ')
-        st.write(' ')
         canvas = st_canvas(
             fill_color='#FFFFFF',
             stroke_width=stroke_width,
@@ -432,12 +430,7 @@ else:
             st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
 
         with col2:
-            message = st.text_area(
-                label='',
-                value=st.session_state.typing,
-                height=288,
-                disabled=True
-            )
+            st.write(f'<div style="height: 288px; font-size: 30px; background: pink; padding: 10px;">{st.session_state.typing}</div>', unsafe_allow_html=True)
 
         if st.session_state.typing == st.session_state.question:
             st.session_state.success = '1'
