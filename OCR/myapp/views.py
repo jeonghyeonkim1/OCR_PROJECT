@@ -1,32 +1,13 @@
-from ast import While
-from multiprocessing.connection import wait
-from turtle import window_height, window_width
 from django.shortcuts import render
 from django.http import JsonResponse
 import os
-import time
 import cv2
 import numpy as np
-import pytesseract
-# from django.views.decorators import gzip
-import threading
-# from myapp.camera import VideoCamera
-from requests import Response
-from PIL import ImageFont, ImageDraw, Image
-from matplotlib import pyplot as plt
 from easyocr import Reader
-import argparse
 import cv2
 import cvlib as cv
 from cvlib.object_detection import draw_bbox
-import roboflow
 from roboflow import Roboflow
-from tkinter import *
-
-root = Tk()
-
-monitor_height = root.winfo_screenheight()
-monitor_width = root.winfo_screenwidth()
 
 rf = Roboflow(api_key="BzyHkzKOlMSJcspr3EH2")
 workspace = rf.workspace()
@@ -41,34 +22,6 @@ def home(request):
     return render(request, 'home.html')
 
 def scan(request):
-    # args = {
-    #         "image": "./static/contour_list/contour.jpg",
-    #         "langs": "en,ko",
-    #         "gpu": -1
-    #     }
-    # langs = args["langs"].split(",")
-    # image = cv2.imread('./static/contour_list/contour.jpg')
-    # reader = Reader(langs, gpu=args["gpu"] > 0)
-    # results = reader.readtext(image, )
-    # for (bbox, text, prob) in results:
-    #     # display the OCR'd text and associated probability
-    #     print("[INFO] {:.4f}: {}".format(prob, text))
-
-    #     # unpack the bounding box
-    #     (tl, tr, br, bl) = bbox
-    #     tl = (int(tl[0]), int(tl[1]))
-    #     tr = (int(tr[0]), int(tr[1]))
-    #     br = (int(br[0]), int(br[1]))
-    #     bl = (int(bl[0]), int(bl[1]))
-
-    #     # cleanup the text and draw the box surrounding the text along
-    #     # with the OCR'd text itself
-    #     text = cleanup_text(text)
-    #     cv2.rectangle(image, tl, br, (0, 255, 0), 2)
-    #     cv2.putText(image, text, (tl[0], tl[1] - 10),
-    #         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-    # cv2.imwrite('./static/contour_list/textocr_result.jpg', image)
-    # cv2.destroyAllWindows()
     return render(request, 'result.html')
 
 def get_cam(request):
@@ -77,9 +30,6 @@ def get_cam(request):
 
     capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     print('camera open failed') if not capture.isOpened() else ''
-
-    # cv2.resizeWindow('qwe', monitor_width, monitor_height)
-    # cv2.moveWindow('qwe', 0, 0)
 
     while 1:
         ret, frame = capture.read()
