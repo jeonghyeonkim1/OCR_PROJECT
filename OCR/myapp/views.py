@@ -22,6 +22,50 @@ def home(request):
     return render(request, 'home.html')
 
 def scan(request):
+    img = cv2.imread('./static/contour_list/contour.jpg')
+
+    print('img: ', img)
+
+    reader = Reader(['en', 'ko'], gpu=False)
+    
+    print('reader: ', reader)
+
+    results = reader.readtext(img)
+
+    print('results: ', results)
+
+    for (bbox, text, prob) in results:
+        print("[INFO] {:.4f}: {}".format(prob, text))
+
+        (tl, tr, br, bl) = bbox
+
+        tl = (int(tl[0]), int(tl[1]))
+        tr = (int(tr[0]), int(tr[1]))
+        br = (int(br[0]), int(br[1]))
+        bl = (int(bl[0]), int(bl[1]))
+
+        text = "".join([c if ord(c) < 128 else "" for c in text]).strip()
+        
+        cv2.rectangle(
+            img,
+            pt1 = tl,
+            pt2 = br,
+            color = (0, 255, 0),
+            thickness = 2
+        )
+
+        cv2.putText(
+            img,
+            text,
+            org = (tl[0], tl[1] - 10),
+            fontFace = cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale = 0.8,
+            color = (0, 255, 0),
+            thickness = 2
+        )
+
+    cv2.imwrite('./static/contour_list/text_contour.jpg', img)
+
     return render(request, 'result.html')
 
 def get_cam(request):
@@ -110,10 +154,6 @@ def get_cam(request):
 
 def recommend(request):
     return render(request, 'recommend.html')
-
-
-def cleanup_text(text):
-    return "".join([c if ord(c) < 128 else "" for c in text]).strip()
 
 def loading(request):
     return render(request, 'loading.html')
