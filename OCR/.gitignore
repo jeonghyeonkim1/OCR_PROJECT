@@ -282,6 +282,9 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.jpg
+.png
+.jpeg
 .env
 .venv
 env/
