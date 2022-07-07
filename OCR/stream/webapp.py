@@ -120,14 +120,15 @@ if mode == '메뉴 찾기':
         bg_image = st.file_uploader("Background image:", type=["png", "jpg"])
         st.session_state.imgupload = '1'
     else:
-        bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
+        bg_image = st.sidebar.file_uploader(
+            "Background image:", type=["png", "jpg"])
         st.session_state.imgupload = '0'
 
     if bg_image == None:
         st.stop()
 
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-    
+
     # image info -------------------------------------------------
     img = np.array(Image.open(bg_image))
     height, width, channel = img.shape
@@ -363,7 +364,23 @@ if mode == '메뉴 찾기':
                     for i in data[1::2]:
                         st.image(i[1])
                         st.write(f'[{i[0]}]({i[2]})')
-  
+
+            if 'dunkin' in options:
+                df = pd.read_excel('excel/dunkin.xlsx')
+                data = [[i[j] for i in [[i for i in df[col]] for col in df]]
+                        for j in range(len([[i for i in df[col]] for col in df][0]))]
+                menu1, menu2 = st.columns(2)
+
+                with menu1:
+                    for i in data[::2]:
+                        st.image(i[1])
+                        st.write(f'[{i[0]}]({i[2]})')
+
+                with menu2:
+                    for i in data[1::2]:
+                        st.image(i[1])
+                        st.write(f'[{i[0]}]({i[2]})')
+
 else:
     drawing_mode = st.sidebar.selectbox(
         "Drawing tool:",
@@ -430,7 +447,8 @@ else:
             st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
 
         with col2:
-            st.write(f'<div style="height: 288px; font-size: 30px; background: pink; padding: 10px;">{st.session_state.typing}</div>', unsafe_allow_html=True)
+            st.write(
+                f'<div style="height: 288px; font-size: 30px; background: pink; padding: 10px;">{st.session_state.typing}</div>', unsafe_allow_html=True)
 
         if st.session_state.typing == st.session_state.question:
             st.session_state.success = '1'
