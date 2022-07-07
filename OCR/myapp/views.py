@@ -3,6 +3,7 @@ from django.http import JsonResponse
 import os
 import cv2
 from matplotlib.pyplot import text
+from matplotlib.style import context
 import numpy as np
 from easyocr import Reader
 import cv2
@@ -155,6 +156,8 @@ def get_cam(request):
 
 
 def book_search(search):
+    
+
     url = f'https://play.google.com/store/search?q={search}&c=books'
 
     headers = {
@@ -184,8 +187,7 @@ def book_search(search):
     for book_list in rolelist:
 
 
-        title = book_list.select_one('div img').attrs['alt'] if book_list.select_one('div img') != None else ''
-
+        title = book_list.select_one('div.hP61id > div:nth-child(1) > div').text.strip() if book_list.select_one('div.hP61id > div:nth-child(1) > div') != None else ''
 
         thumbnail = book_list.select_one('div img').attrs['src'] if book_list.select_one('div img') != None else ''
 
@@ -199,13 +201,13 @@ def book_search(search):
 
 
 def recommend(request):
+    text = request.GET.get('ocr_text', '없쪙'),
+    crwal = book_search(text)
     context = {
-        'text' : request.GET.get(text)
-        }
-    
-    
-    print(context['text'])
-    return render(request, 'recommend.html', context )
+        'crwal' : crwal,
+    }
+    print(text)
+    return render(request, 'recommend.html', context)
 
 def loading(request):
     return render(request, 'loading.html')

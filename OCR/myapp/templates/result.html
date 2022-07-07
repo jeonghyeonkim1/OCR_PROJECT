@@ -5,19 +5,6 @@
 <script src="{% static 'bs/js/html2canvas.js' %}"></script>
 
 <script>
-$(function() {
-    $('#save').click(function() {
-        $.ajax({
-            url: '{% url "ocr:recommend" %}',
-            type: 'GET',
-            data : {'text' : $('#t_input').val()},
-            success : function(res) {
-                alert('성공')
-                location.href='{% url "ocr:recommend" %}'
-            }
-        })
-    })
-})
 
 </script>
 
@@ -72,13 +59,15 @@ $(function() {
                     <div id='output'>
                         <img src="{% static 'contour_list/text_contour.jpg' %}" alt="">
                     </div>
-                    <input type="text" value='{{text}}' id='t_input'>
                 </td>
             </tr>
             <tr>
                 <td colspan='3'>
                     <div id='btn_div'>
-                        <button class='btn btn-secondary btn-lg' type='button' id='save'>추천도서 보러가기</button>
+                        <form action="{% url 'ocr:recommend' %}">
+                            <button class='btn btn-secondary btn-lg'>추천도서 보러가기</button>
+                            <input type="hidden", value="{{ text }}" name="ocr_text">
+                        </form>
                     </div>
                 </td>
             </tr>

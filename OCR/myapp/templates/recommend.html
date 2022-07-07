@@ -18,20 +18,16 @@
     <div class='rounded vh-100 m-2 p-2 d-flex justify-content-center align-items-center bg-light' style='overflow: auto  ;'>
         <table>
             <thead>
-                <th>도서{{ text }}</th>
+                <th>도서</th>
                 <th>도서명</th>
-                <th>저자</th>
-                <th>출판사</th>
-                <th>분야?</th>
             </thead>
             <tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
+                {% for book in crwal %}
+                    <tr>
+                        <td><img src="{{ book.thumbnail }}" alt=""></td>
+                        <td>{{ book.title }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
