@@ -4,8 +4,6 @@
 {% load static %}
 <script src="{% static 'bs/js/html2canvas.js' %}"></script>
 
-
-
 <style>
     #tr1 td {
         border:3px solid #b9c1d7;
@@ -57,15 +55,15 @@
                     <div id='output'>
                         <img src="{% static 'contour_list/text_contour.jpg' %}" alt="">
                     </div>
-                    <input type="text" value='{{text}}' id='t_input'>
                 </td>
             </tr>
             <tr>
                 <td colspan='3'>
                     <div id='btn_div'>
-                        
-                        <button class='btn btn-secondary btn-lg' type='button' id='save'>추천도서 보러가기</button>
-
+                        <form action="{% url 'ocr:recommend' %}">
+                            <button class='btn btn-secondary btn-lg'>추천도서 보러가기</button>
+                            <input type="hidden", value="{{ text }}" name="ocr_text">
+                        </form>
                     </div>
                 </td>
             </tr>
