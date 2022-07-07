@@ -200,7 +200,7 @@ def book_search(search):
 
 def recommend(request):
     context = {
-        'text' : request.GET.get(text)
+        'text' : request.GET.get('text_2')
         }
     
     
