@@ -2,12 +2,15 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import os
 import cv2
+from matplotlib.pyplot import text
 import numpy as np
 from easyocr import Reader
 import cv2
 import cvlib as cv
 from cvlib.object_detection import draw_bbox
 from roboflow import Roboflow
+import requests
+from bs4 import BeautifulSoup
 
 rf = Roboflow(api_key="BzyHkzKOlMSJcspr3EH2")
 workspace = rf.workspace()
@@ -21,7 +24,11 @@ model = project.version(6).model
 def home(request):
     return render(request, 'home.html')
 
+
+
 def scan(request):
+    
+
     img = cv2.imread('./static/contour_list/contour.jpg')
 
     
@@ -147,8 +154,60 @@ def get_cam(request):
     return JsonResponse({})
 
 
+def book_search(search):
+    url = f'https://play.google.com/store/search?q={search}&c=books'
+
+    headers = {
+        'referer': 'https://play.google.com/',
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
+    }
+
+    response = requests.get(url, headers=headers, stream=True)
+
+    dom = BeautifulSoup(response.text, 'html.parser')
+
+    rolelist = dom.select('[role="listitem"]')
+    reply = dom.select('p a')
+
+    if len(reply) > 0:
+        url = f'https://play.google.com/store/search?q={reply[0].text.strip()}&c=books'
+
+        response = requests.get(url, headers=headers, stream=True)
+
+        dom = BeautifulSoup(response.text, 'html.parser')
+
+        rolelist = dom.select('[role="listitem"]')
+        
+        
+    result = []
+
+    for book_list in rolelist:
+
+
+        title = book_list.select_one('div img').attrs['alt'] if book_list.select_one('div img') != None else ''
+
+
+        thumbnail = book_list.select_one('div img').attrs['src'] if book_list.select_one('div img') != None else ''
+
+        if title != '' and thumbnail != '':
+            result.append({
+                'title': title,
+                'thumbnail': thumbnail,
+            })
+
+    return result
+
+
 def recommend(request):
-    return render(request, 'recommend.html')
+    context = {
+        'text' : request.GET.get(text)
+        }
+    
+    
+    print(context['text'])
+    return render(request, 'recommend.html', context )
 
 def loading(request):
     return render(request, 'loading.html')
+
+

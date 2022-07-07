@@ -4,6 +4,23 @@
 {% load static %}
 <script src="{% static 'bs/js/html2canvas.js' %}"></script>
 
+<script>
+$(function() {
+    $('#save').click(function() {
+        $.ajax({
+            url: '{% url "ocr:recommend" %}',
+            type: 'GET',
+            data : {'text' : $('#t_input').val()},
+            success : function(res) {
+                alert('성공')
+                location.href='{% url "ocr:recommend" %}'
+            }
+        })
+    })
+})
+
+</script>
+
 <style>
     #tr1 td {
         border:3px solid #b9c1d7;
@@ -54,8 +71,8 @@
                 <td>
                     <div id='output'>
                         <img src="{% static 'contour_list/text_contour.jpg' %}" alt="">
-                        {{ text }}
                     </div>
+                    <input type="text" value='{{text}}' id='t_input'>
                 </td>
             </tr>
             <tr>
