@@ -2,12 +2,16 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import os
 import cv2
+from matplotlib.pyplot import text
 import numpy as np
 from easyocr import Reader
 import cv2
 import cvlib as cv
 from cvlib.object_detection import draw_bbox
 from roboflow import Roboflow
+import requests
+from bs4 import BeautifulSoup
+from matplotlib.style import context
 
 rf = Roboflow(api_key="BzyHkzKOlMSJcspr3EH2")
 workspace = rf.workspace()
@@ -21,19 +25,23 @@ model = project.version(6).model
 def home(request):
     return render(request, 'home.html')
 
+
+
 def scan(request):
+    
+
     img = cv2.imread('./static/contour_list/contour.jpg')
 
-    print('img: ', img)
+    
 
     reader = Reader(['en', 'ko'], gpu=False)
     
-    print('reader: ', reader)
+    
 
     results = reader.readtext(img)
 
-    print('results: ', results)
 
+    text_list = []
     for (bbox, text, prob) in results:
         print("[INFO] {:.4f}: {}".format(prob, text))
 
@@ -44,8 +52,12 @@ def scan(request):
         br = (int(br[0]), int(br[1]))
         bl = (int(bl[0]), int(bl[1]))
 
+        text_list.append(text)
+
         text = "".join([c if ord(c) < 128 else "" for c in text]).strip()
         
+        print(text)
+
         cv2.rectangle(
             img,
             pt1 = tl,
@@ -54,19 +66,10 @@ def scan(request):
             thickness = 2
         )
 
-        cv2.putText(
-            img,
-            text,
-            org = (tl[0], tl[1] - 10),
-            fontFace = cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale = 0.8,
-            color = (0, 255, 0),
-            thickness = 2
-        )
-
+    
     cv2.imwrite('./static/contour_list/text_contour.jpg', img)
-
-    return render(request, 'result.html')
+    
+    return render(request, 'result.html', {'text': ' '.join(text_list)})
 
 def get_cam(request):
     file_path = './static/contour_list'
@@ -152,8 +155,59 @@ def get_cam(request):
     return JsonResponse({})
 
 
+def book_search(search):
+    url = f'https://play.google.com/store/search?q={search}&c=books'
+
+    headers = {
+        'referer': 'https://play.google.com/',
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
+    }
+
+    response = requests.get(url, headers=headers, stream=True)
+
+    dom = BeautifulSoup(response.text, 'html.parser')
+
+    rolelist = dom.select('[role="listitem"]')
+    reply = dom.select('p a')
+
+    if len(reply) > 0:
+        url = f'https://play.google.com/store/search?q={reply[0].text.strip()}&c=books'
+
+        response = requests.get(url, headers=headers, stream=True)
+
+        dom = BeautifulSoup(response.text, 'html.parser')
+
+        rolelist = dom.select('[role="listitem"]')
+        
+        
+    result = []
+
+    for book_list in rolelist:
+
+
+        title = book_list.select_one('div.hP61id > div:nth-child(1) > div').text.strip() if book_list.select_one('div.hP61id > div:nth-child(1) > div') != None else ''
+
+        thumbnail = book_list.select_one('div img').attrs['src'] if book_list.select_one('div img') != None else ''
+
+        if title != '' and thumbnail != '':
+            result.append({
+                'title': title,
+                'thumbnail': thumbnail,
+            })
+
+    return result
+
+
 def recommend(request):
-    return render(request, 'recommend.html')
+    text = request.GET.get('ocr_text', '없쪙'),
+    crwal = book_search(text)
+    context = {
+        'crwal' : crwal,
+    }
+    return render(request, 'recommend.html', context)
+
 
 def loading(request):
     return render(request, 'loading.html')
+
+

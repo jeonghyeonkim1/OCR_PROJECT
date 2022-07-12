@@ -60,7 +60,10 @@
             <tr>
                 <td colspan='3'>
                     <div id='btn_div'>
-                        <button class='btn btn-secondary btn-lg' type='button' id='save'>추천도서 보러가기</button>
+                        <form action="{% url 'ocr:recommend' %}">
+                            <button class='btn btn-secondary btn-lg'>추천도서 보러가기</button>
+                            <input type="hidden", value="{{ text }}" name="ocr_text">
+                        </form>
                     </div>
                 </td>
             </tr>
