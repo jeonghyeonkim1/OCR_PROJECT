@@ -52,7 +52,7 @@ if 'question' not in st.session_state:
         charset='utf8'
     )
 
-    sql = '''
+    sql = f'''
         SELECT sent FROM rand_sent ORDER BY RAND()
     '''
 
@@ -87,7 +87,7 @@ if st.session_state.success == '1':
         )
 
         sql = f'''
-            SELECT sent FROM rand_sent WHERE sent != '{st.session_state.question} ORDER BY RAND()'
+            SELECT sent FROM rand_sent WHERE sent != '{st.session_state.question}' ORDER BY RAND()
         '''
 
         with db.cursor() as cursor:
