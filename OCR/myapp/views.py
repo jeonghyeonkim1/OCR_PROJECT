@@ -190,6 +190,7 @@ def book_search(search):
 
         thumbnail = book_list.select_one('div img').attrs['src'] if book_list.select_one('div img') != None else ''
 
+
         if title != '' and thumbnail != '':
             result.append({
                 'title': title,

@@ -6,22 +6,240 @@ from PIL import Image
 from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 from torch.autograd import Variable
-import time
-import tensorflow as tf
+from bs4 import BeautifulSoup
+import requests
+import torch
+import torch.backends.cudnn as cudnn
+import torch.utils.data
+import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torch.nn as nn
+import time
+import tensorflow as tf
 import numpy as np
 import cv2
 import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import math
 import sys
 import re
 import six
 import math
 import lmdb
+import time
+import string
+import argparse
+
+def find_book_num(book_name, shop_num):
+    return [
+        j.select_one('span.total').text.strip()
+        for j in BeautifulSoup(requests.get(
+            f"http://mkiosk.kyobobook.co.kr/kiosk/search/searchMain.ink?category=TOT&viewCount=20&sort=SALE_QTY&sortId=&startNo=0&bookNM=&query={book_name}&keywordCP=&author=&pubNM=&originTIT=&originATH=&pubDateFrom=&pubDateTo=&translator=&isbn=&jo=&site={shop_num}&mode=pc&flag=P").text,
+            'html.parser'
+        ).select('.book_mod')
+    ][0]
+
+def all_process(img):
+    height, width, channel = img.shape
+
+    # contour maker -------------------------------------------------
+    weight_path = 'C:/models/contour_maker'
+    weight_name = os.listdir(weight_path)[0]
+    weight_loc = os.path.join(weight_path, weight_name)
+
+    parser = argparse.ArgumentParser(description='CRAFT Text Detection')
+    parser.add_argument('--trained_model', default=weight_loc,
+                        type=str, help='pretrained model')
+    parser.add_argument('--text_threshold', default=0.7,
+                        type=float, help='text confidence threshold')
+    parser.add_argument('--low_text', default=0.4, type=float,
+                        help='text low-bound score')
+    parser.add_argument('--link_threshold', default=0.4,
+                        type=float, help='link confidence threshold')
+    parser.add_argument('--cuda', default=False, type=str2bool,
+                        help='Use cuda for inference')
+    parser.add_argument('--canvas_size', default=1280,
+                        type=int, help='image size for inference')
+    parser.add_argument('--mag_ratio', default=1.5, type=float,
+                        help='image magnification ratio')
+    parser.add_argument('--poly', default=False,
+                        action='store_true', help='enable polygon type')
+    parser.add_argument('--show_time', default=False,
+                        action='store_true', help='show processing time')
+    parser.add_argument('--test_folder', default='data/',
+                        type=str, help='folder path to input images')
+    parser.add_argument('--refine', default=False,
+                        action='store_true', help='enable link refiner')
+    parser.add_argument('--refiner_model', default='weights/craft_refiner_CTW1500.pth',
+                        type=str, help='pretrained refiner model')
+
+    args = parser.parse_args()
+
+    net = CRAFT()
+    print('Loading weights from checkpoint (' + args.trained_model + ')')
+    if args.cuda:
+        net.load_state_dict(copyStateDict(torch.load(args.trained_model)))
+    else:
+        net.load_state_dict(copyStateDict(
+            torch.load(args.trained_model, map_location='cpu')))
+
+    if args.cuda:
+        net = net.cuda()
+        net = torch.nn.DataParallel(net)
+        cudnn.benchmark = False
+
+    net.eval()
+
+    refine_net = None
+    if args.refine:
+        refine_net = RefineNet()
+        print('Loading weights of refiner from checkpoint (' + args.refiner_model + ')')
+        if args.cuda:
+            refine_net.load_state_dict(
+                copyStateDict(torch.load(args.refiner_model)))
+            refine_net = refine_net.cuda()
+            refine_net = torch.nn.DataParallel(refine_net)
+        else:
+            refine_net.load_state_dict(copyStateDict(
+                torch.load(args.refiner_model, map_location='cpu')))
+
+        refine_net.eval()
+        args.poly = True
+
+    t = time.time()
+
+    image = loadImage(img)
+
+    bboxes, polys = test_net(
+        args,
+        net,
+        image,
+        args.text_threshold,
+        args.link_threshold,
+        args.low_text,
+        args.cuda,
+        args.poly,
+        refine_net
+    )
+
+    saveResult(image[:, :, ::-1], polys)
+
+    print("elapsed time : {}s".format(time.time() - t))
+
+    # text-recognizer -------------------------------------------------
+    model_path = 'C:/models/text_recognizer'
+    model_name = os.listdir(model_path)[0]
+    model_loc = os.path.join(model_path, model_name)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--image_folder', default='result/',
+                        help='path to image_folder which contains text images')
+    parser.add_argument('--workers', type=int,
+                        help='number of data loading workers', default=0)
+    parser.add_argument('--batch_size', type=int,
+                        default=192, help='input batch size')
+    parser.add_argument('--saved_model', default=model_loc,
+                        help="path to saved_model to evaluation")
+    # Data processing
+    parser.add_argument('--batch_max_length', type=int,
+                        default=25, help='maximum-label-length')
+    parser.add_argument('--imgH', type=int, default=32,
+                        help='the height of the input image')
+    parser.add_argument('--imgW', type=int, default=100,
+                        help='the width of the input image')
+    parser.add_argument('--rgb', action='store_true', help='use rgb input')
+    parser.add_argument('--character', type=str,
+                        default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
+    parser.add_argument('--sensitive', action='store_true',
+                        help='for sensitive character mode')
+    parser.add_argument('--PAD', action='store_true',
+                        help='whether to keep ratio then pad for image resize')
+    # Model Architecture
+    parser.add_argument('--Transformation', type=str,
+                        default='TPS', help='Transformation stage. None|TPS')
+    parser.add_argument('--FeatureExtraction', type=str, default='ResNet',
+                        help='FeatureExtraction stage. VGG|RCNN|ResNet')
+    parser.add_argument('--SequenceModeling', type=str,
+                        default='BiLSTM', help='SequenceModeling stage. None|BiLSTM')
+    parser.add_argument('--Prediction', type=str,
+                        default='Attn', help='Prediction stage. CTC|Attn')
+    parser.add_argument('--num_fiducial', type=int, default=20,
+                        help='number of fiducial points of TPS-STN')
+    parser.add_argument('--input_channel', type=int, default=1,
+                        help='the number of input channel of Feature extractor')
+    parser.add_argument('--output_channel', type=int, default=512,
+                        help='the number of output channel of Feature extractor')
+    parser.add_argument('--hidden_size', type=int, default=256,
+                        help='the size of the LSTM hidden state')
+
+    opt = parser.parse_args()
+
+    if opt.sensitive:
+        # same with ASTER setting (use 94 char).
+        opt.character = string.printable[:-6]
+
+    cudnn.benchmark = True
+    cudnn.deterministic = True
+    opt.num_gpu = torch.cuda.device_count()
+
+    # model configuration
+    if 'CTC' in opt.Prediction:
+        converter = CTCLabelConverter(opt.character)
+    else:
+        converter = AttnLabelConverter(opt.character)
+    opt.num_class = len(converter.character)
+
+    if opt.rgb:
+        opt.input_channel = 3
+    model = Model(opt)
+    print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
+            opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
+            opt.SequenceModeling, opt.Prediction)
+    model = torch.nn.DataParallel(model).to(device)
+
+    # load model
+    print('loading pretrained model from %s' % opt.saved_model)
+    model.load_state_dict(torch.load(opt.saved_model, map_location=device))
+
+    # prepare data. two demo images from https://github.com/bgshih/crnn#run-demo
+    AlignCollate_demo = AlignCollate(
+        imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+    demo_data = RawDataset(root=opt.image_folder,
+                            opt=opt)  # use RawDataset
+    demo_loader = torch.utils.data.DataLoader(
+        demo_data, batch_size=opt.batch_size,
+        shuffle=False,
+        num_workers=int(opt.workers),
+        collate_fn=AlignCollate_demo, pin_memory=True)
+
+    # predict
+    model.eval()
+    with torch.no_grad():
+        for image_tensors, image_path_list in demo_loader:
+            batch_size = image_tensors.size(0)
+            image = image_tensors.to(device)
+            # For max length prediction
+            length_for_pred = torch.IntTensor(
+                [opt.batch_max_length] * batch_size).to(device)
+            text_for_pred = torch.LongTensor(
+                batch_size, opt.batch_max_length + 1).fill_(0).to(device)
+
+            if 'CTC' in opt.Prediction:
+                preds = model(image, text_for_pred)
+
+                # Select max probabilty (greedy decoding) then decode index to character
+                preds_size = torch.IntTensor([preds.size(1)] * batch_size)
+                _, preds_index = preds.max(2)
+                # preds_index = preds_index.view(-1)
+                preds_str = converter.decode(preds_index, preds_size)
+
+            else:
+                preds = model(image, text_for_pred, is_train=False)
+
+                # select max probabilty (greedy decoding) then decode index to character
+                _, preds_index = preds.max(2)
+                preds_str = converter.decode(preds_index, length_for_pred)
+
+    return [re.sub(r'\[s\]', '', pred) for pred in preds_str]
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
