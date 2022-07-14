@@ -24,82 +24,82 @@
         })
     })
    })
+
+   
+
+
+    setInterval(function(){
+        $('#slide>ul').delay(2500);
+        $('#slide>ul').animate({marginTop: "-300px"})
+        $('#slide>ul').delay(2500);
+        $('#slide>ul').animate({marginTop: "-600px"})
+        $('#slide>ul').delay(2500);
+        $('#slide>ul').animate({marginTop: "0px"})
+    });
+
+
 </script>
+
+
+   
+
+
 <style>
 
-    h6{
-        padding-top:15px;
-    }
-    #th2 {
-        padding:18px;
-    }
-    #th1 {
-        padding: 24px;
-    }
-    .container thead{
-        height:200px;
-    }
     th i {
-        margin:50px;
+        margin:20px;
     }
     th div {
-        margin-bottom:20px;
+        margin-bottom:10px;
     }
     #menu1 th div {
         margin-bottom:50px;
-    }
-    .container tbody td {
-        padding-top: 73px;
     }
     .rounded {
         border-radius: 1.25rem!important;
     }
     #box0{
-        border:10px solid #7a8fa424;
-        border-radius: 90px;
+        border: 5px solid #7a8fa424;
+        border-top-right-radius: 50px;
+        border-top-left-radius: 50px;
+        border-bottom-right-radius: 15px;
+        border-bottom-left-radius: 15px;
         padding:10px;
         margin-top:22px;
     }
     #box1{
-        border:13px solid #49507fc7;
-        padding: 22px;
-
+        border:10px solid #c4c6c7c7;
     }
     #box2{
-        border:13px solid #7eb0c1c7;
-        padding: 26px;
+        border:10px solid #c4c6c7c7;
     }
     #menu1{
-        float:left;
-        width:390px;
-        height:600px;
+        width: 450px;
     }
     #menu2{
-        display:inline-block;
-        width:400px;
-        height:600px;
-        margin-left:30px;
+        width: 450px;
+        margin-top: 9%;
+        margin-bottom: 45%;
     }
     #btn1{
         text-decoration:none;
         width:200px;
         height:70px;
-        background-color: #49507fc7;
+        background-color: #2a2e49c7;
         color:white;
     }
     #btn2{
         text-decoration:none;
         width:200px;
-        height:70px;
-        background-color: #7eb0c1c7;
+        height:67px;
+        background-color: #697da0c7;
         color:white;
-        margin-top: 9px;
     }
     #btn1:hover {
-        background-color: #49507f;
+        background-color: #c4c6c7c7;
     }
     #btn2:hover {
-        background-color: #709eae;
+        background-color: #c4c6c7c7;
     }
     #btn1::before {
         content: '';
@@ -150,7 +150,6 @@
       opacity:1;
       width: 120%;
     }
-    
     #btn2::before {
         content: '';
         width: 0%;
@@ -171,7 +170,6 @@
       transition: all .7s cubic-bezier(0.77, 0, 0.175, 1);
          box-shadow:2px 0px 14px rgba(0,0,0,.6);
       } 
-    
     #btn2::after {
         content: '';
         width: 0%;
@@ -197,69 +195,310 @@
       width: 116%;
     }
     #btn2:hover::after, #btn2:hover::after{
-      opacity:1;
-      width: 120%;
+        opacity:1;
+        width: 120%;
     }
     .table>:not(:first-child) {
         border-top: 1px; solid currentColor;
+    }
+    #menu0 {
+        display: inline-block;
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+
+    }
+    #menu1 th div {
+        margin-bottom: 4px;
+    }
+    img {
+        display: block;
+        margin: auto;
+        filter: grayscale(50%);
+    }
+    #menu0 > * {
+        margin: 180px auto;
+        padding:0;
+        display: block;
+        box-sizing:border-box;
+    }
+    ul, li {
+        list-style:none;
+    }
+    [name='slide'] {display:none;}
+    .slidebox {
+        max-width: 450px;
+        width:100%;
+        margin:0 auto;
+        height:100px;
+    }
+    .slidebox img {
+        max-width: 377px;
+        margin: 5px;
+    }
+    .slidebox .slidelist {
+        white-space: nowrap;
+        font-size:0;
+        overflow:hidden;
+    }
+    .slidebox .slideitem {
+        position: relative;
+        display:inline-block;
+        vertical-align:middle;
+        width:100%;
+        transition: all .35s;
+    }
+    .slidebox .slideitem label {
+        position: absolute;
+        z-index:1;
+        top:50%;
+        transform:translateY(-50%);
+        padding:12px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    label.left {
+        left: 10px;
+        color:#fff;
+        background-color: #ffffff00;
+        background-image: url('./static/line-angle-left.png');
+        background-position: center center;
+        background-size: 50%;
+        background-repeat: no-repeat;
+    }
+    label.right {
+        right: 40px;
+        background-color: #ffffff00;
+        background-image: url('./static/line-angle-right.png');
+        background-position: center center;
+        background-size: 50%;
+        background-repeat: no-repeat;
+    }
+    [id='slide01']:checked ~ .slidelist .slideitem {transform:translateX(0); animation: slide01 15s infinite;}
+    [id='slide02']:checked ~ .slidelist .slideitem {transform:translateX(-100%); animation: slide02 30s infinite;}
+    [id='slide03']:checked ~ .slidelist .slideitem {transform:translateX(-200%); animation: slide03 12s infinite;}
+
+    @keyframes slide01 {
+        0% {left: 0%;}
+        23% {left: 0%;}
+        25% {left: -100%;}
+        48% {left: -100%;}
+        50% {left: -200%;}
+        73% {left: -200%;}
+        75% {left: -200%;}
+        98% {left: -200%;}
+        100% {left: 0%;}
+    }
+    @keyframes slide02 {
+        0% {left: 0%;}
+        23% {left: 0%;}
+        25% {left: -100%;}
+        48% {left: -100%;}
+        50% {left: -200%;}
+        73% {left: -200%;}
+        75% {left: 100%;}
+        98% {left: 100%;}
+        100% {left: 0%;}
+    }
+    @keyframes slide03 {
+        0% {left: 0%;}
+        23% {left: 0%;}
+        25% {left: -100%;}
+        48% {left: -100%;}
+        50% {left: -200%;}
+        73% {left: -200%;}
+        75% {left: 100%;}
+        98% {left: 100%;}
+        100% {left: 0%;}
+    }
+
+
+    $target: #fff;
+
+    .wrapper {
+    transform: translate(-50%,-50%);
+    white-space: nowrap;
+    }
+
+    .focus {
+    transform: translateY(-11%);
+    font-family: Arial;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    filter: blur(4px);
+    font-size: 65px;
+    opacity: 0.6;
+    color: #7a94a8;
+    }
+
+    .mask {
+    top:6%;
+    left:45%;
+    position: absolute;
+    font-family: Arial;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 65px;
+    clip: rect(0px,80px,75px,0px);
+    background: linear-gradient($target, $target 0) no-repeat,
+        linear-gradient(to right, $target, $target 0) no-repeat,
+        linear-gradient(to right, $target, $target 0) bottom left no-repeat,
+        linear-gradient(to right, $target, $target 0) bottom left no-repeat,
+        linear-gradient($target, $target 0) bottom right no-repeat,
+        linear-gradient($target, $target 0) bottom right no-repeat,
+        linear-gradient($target, $target 0) top right no-repeat,
+        linear-gradient($target, $target 0) top right no-repeat;
+    background-size: 10px 2px, 2px 10px, 2px 10px, 10px 2px, 2px 10px, 10px 2px, 10px 2px, 2px 10px, 10px 2px;
+    color: #494777;
+    padding: 5px;
+    transform: translateX(0);
+    box-sizing: border-box;
+    animation: mask 2.5s ease infinite alternate;
+    }
+
+    .text {
+    transform: translateX(0);
+    animation: text 2.5s ease infinite alternate;
+    }
+
+    @keyframes mask {
+    to {
+        transform: translateX(170px);
+    }
+    }
+
+    @keyframes text {
+    to {
+        transform: translateX(-170px);
+    }
+    }
+
+    .r > i {
+        margin-right:10%;
+    }
+    a > i {
+        color: #fff;
     }
 </style>
 {% endblock %}
 
 {% block contents %}
-
-
 <body class="container" style='overflow: hidden;'>
-    <div class="r d-flex justify-content-center align-items-center" id='box0'>
-        <h4><i class="fa-solid fa-quote-left"></i></h4>
-        <h3>ㅤText OCR by recognizing objectㅤ</h3>
-        <h4><i class="fa-solid fa-quote-right"></i></h4>
+    <div class="r justify-content-center bg-light" id='box0' style='padding:15px 25px 40px 20px; margin-bottom:5px;'>
+        <h3 style='float:right; color:#2124272e;'>White Valley</h3>
+    
     </div>
+    
     <div class='rounded vh-100 d-flex justify-content-center align-items-center bg-light'>
+        <div style='text-align:center; margin:0 0 16px 10px; height:83%; padding:10px;'>
+            <div style='width:433px; height:146px; text-align: center; position: fixed;'>
+                <div class="wrapper">
+                    <div class="focus">
+                      BOOK
+                    </div>
+                    <div class="mask">
+                      <div class="text">OCR</div>
+                    </div>
+                </div>
+            </div>
+            <div id='menu0'>
+                <div class='slidebox' style='text-align:center;'>
+                    <input type="radio" name='slide' id='slide01' checked>
+                    <input type="radio" name='slide' id='slide02'>
+                    <input type="radio" name='slide' id='slide03'>
+                    <ul class='slidelist'>
+                        <li class='slideitem'>
+                            <div>
+                                <label for="slide03" class='left'></label>
+                                <label for="slide02" class='right'></label>
+                                <a><img src="./static/main3.jpg"></a>
+                            </div>
+                        </li>
+                        <li class='slideitem'>
+                            <div>
+                                <label for="slide01" class='left'></label>
+                                <label for="slide03" class='right'></label>
+                                <a><img src="./static/main4.jpg" ></a>
+                            </div>
+                        </li>
+                        <li class='slideitem'>
+                            <div>
+                                <label for="slide02" class='left'></label>
+                                <label for="slide01" class='right'></label>
+                                <a><img src="./static/main5.jpg"></a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>                
+            </div>  
+            <div style='width:100%; height:100%; padding-top: 3%;margin-top:12%; border-radius: 64px; background-color: #bfbfc1e3;'>
+                
+                    <a class="btn btn-outline-light btn-floating m-2" href="http://www.facebook.com" role="button" target="_blank" style='border-radius:50%;'>
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a class="btn btn-outline-light btn-floating m-1" href="http://www.twitter.com" role="button" target="_blank" style='border-radius:50%;'>
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a class="btn btn-outline-light btn-floating m-1" href="http://www.google.com" role="button" target="_blank" style='border-radius:50%;'>
+                        <i class="fab fa-google"></i>
+                    </a>
+                    <a class="btn btn-outline-light btn-floating m-1" href="http://www.instagram.com" role="button" target="_blank" style='border-radius:50%;'>
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a class="btn btn-outline-light btn-floating m-1" href="http://www.github.com" role="button" target="_blank" style='border-radius:50%;'>
+                        <i class="fab fa-github"></i>
+                    </a>
+                
+            </div>      
+        </div>
         
-        <div id='menu1'>
-            <div class="rounded vh-50 d-flex justify-content-center align-items-center" id='box1'>
-                <table class="table text-center">
-                    <thead>
-                        <tr>
-                            <th id='th1'>
-                                <i class="display-3 fa-solid fa-arrow-right-arrow-left fa-beat"></i>
-                                <div><h3>Study & Menu</h3></div>
-                            </th>
-                        </tr>
-                    </thead>    
-                    <tbody>
-                        <tr>
-                            <td style='padding-top:78px;'> 
-                                <a id='btn1' style='display:inline-block;padding:20px 40px 20px 40px;' href='http://localhost:8501/'>Start</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        
+        <div style='width: 600px; display: flex; justify-self: center; align-items: center; flex-direction: column; padding: 200px;'>
+            <div id='menu1'>
+                <div class="rounded vh-50 d-flex justify-content-center align-items-center" id='box1'>
+                    <table class="table text-center">
+                        <thead>
+                            <tr>
+                                <th id='th1'>
+                                    <i class="display-6 fa-solid fa-magnifying-glass fa-beat"></i>
+                                    <div><h6>Study & Menu</h6></div>
+                                </th>
+                            </tr>
+                        </thead>    
+                        <tbody>
+                            <tr>
+                                <td> 
+                                    <a id='btn1' style='display:inline-block;padding:20px 40px 20px 40px;' href='http://localhost:8501/'>Start</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id='menu2'>
+                <div class="rounded vh-50 d-flex justify-content-center align-items-center"  id='box2'>
+                    <table class="table text-center">
+                        <thead>
+                            <tr>
+                                <th id='th2'>
+                                    <i class="display-6 fa-solid fa-book fa-beat"></i>
+                                    <div><h6>Book Recommendation</h6></div>
+                                </th>
+                            </tr>
+                        </thead>                        
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <button style='display:inline-block;padding:20px 40px 20px 40px; border:none'  id='btn2'>Start</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> 
             </div>
         </div>
-        <div id='menu2'>
-            <div class="rounded vh-50 d-flex justify-content-center align-items-center"  id='box2'>
-                <table class="table text-center">
-                    <thead>
-                        <tr>
-                            <th id='th2'>
-                                <i class="display-3 fa-solid fa-book fa-beat"></i>
-                                <div><h3>Book Recommendation</h3></div>
-                            </th>
-                        </tr>
-                    </thead>
-                        
-                    <tbody>
-                        <tr>
-                            <td>
-                                <button style='display:inline-block;padding:20px 40px 20px 40px; border:none'  id='btn2'>Start</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div> 
-        </div>
+        
     </div>
 
 </body>

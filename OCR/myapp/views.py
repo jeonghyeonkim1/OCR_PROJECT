@@ -13,14 +13,15 @@ import requests
 from bs4 import BeautifulSoup
 from matplotlib.style import context
 
-rf = Roboflow(api_key="BzyHkzKOlMSJcspr3EH2")
+rf = Roboflow(api_key="GZosUCrriaJ2C6JyHG5c")
 workspace = rf.workspace()
 workspace.name
 workspace.url
 workspace.projects()
 
-project = rf.workspace("seoheejang").project("chess-sample-m5hzq")
-model = project.version(6).model
+project = rf.workspace("model-ua05t").project("bookmodel")
+
+model = project.version(2).model
 
 def home(request):
     return render(request, 'home.html')
@@ -188,6 +189,7 @@ def book_search(search):
         title = book_list.select_one('div.hP61id > div:nth-child(1) > div').text.strip() if book_list.select_one('div.hP61id > div:nth-child(1) > div') != None else ''
 
         thumbnail = book_list.select_one('div img').attrs['src'] if book_list.select_one('div img') != None else ''
+
 
         if title != '' and thumbnail != '':
             result.append({
