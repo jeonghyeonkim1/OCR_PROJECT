@@ -1,9 +1,9 @@
 [theme]
 
-primaryColor = "purple"
+primaryColor = "2a2e49c7"
 
-backgroundColor = "#C6C6EF"
+backgroundColor = "#FFFFFF"
 
-secondaryBackgroundColor = "pink"
+secondaryBackgroundColor = "#c4c6c7c7"
 
-textColor = "#83243C"
+textColor = "#697da0c7"
