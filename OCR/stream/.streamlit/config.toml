@@ -1,9 +1,9 @@
 [theme]
 
-primaryColor = "2a2e49c7"
+primaryColor = "#2a2e49c7"
 
 backgroundColor = "#FFFFFF"
 
 secondaryBackgroundColor = "#c4c6c7c7"
 
-textColor = "#697da0c7"
+textColor = "#161c2d"

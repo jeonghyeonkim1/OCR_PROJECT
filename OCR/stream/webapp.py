@@ -78,6 +78,7 @@ if st.session_state.ocr_result == "":
             st.experimental_rerun()
 
 else:
+    bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
     drawing_mode = st.sidebar.selectbox(
         "Drawing tool:",
         ("freedraw", "line", "rect", "circle", "transform", "polygon", "point"),
@@ -87,7 +88,7 @@ else:
         point_display_radius = st.sidebar.slider(
             "Point display radius: ", 1, 25, 8)
     stroke_color = st.sidebar.color_picker("Stroke color hex: ")
-    bg_color = st.sidebar.color_picker("Background color hex: ", "#BBB9B9")
+    bg_color = st.sidebar.color_picker("Background color hex: ", "#c4c6c7")
     realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
     st.info(f"검색한 서점 : {st.session_state.ocr_result}")
@@ -223,7 +224,7 @@ else:
             ax.bar(
                 chart_data['Pred'],
                 chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
-                color='#c4c6c7c7',
+                color='#161c2d',
                 alpha=0.5
             )
             st.pyplot(fig)
