@@ -12,6 +12,7 @@ from roboflow import Roboflow
 import requests
 from bs4 import BeautifulSoup
 from matplotlib.style import context
+import re
 
 rf = Roboflow(api_key="GZosUCrriaJ2C6JyHG5c")
 workspace = rf.workspace()
@@ -35,7 +36,7 @@ def scan(request):
 
     
 
-    reader = Reader(['en', 'ko'], gpu=False)
+    reader = Reader(['ko','en'], gpu=True)
     
     
 
@@ -55,7 +56,7 @@ def scan(request):
 
         text_list.append(text)
 
-        text = "".join([c if ord(c) < 128 else "" for c in text]).strip()
+        text = "".join([re.sub("[^가-힣 | a-z | A-Z | 0-9]", '', c) for c in text]).strip()
         
         print(text)
 
