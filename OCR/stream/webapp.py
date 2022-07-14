@@ -27,9 +27,6 @@ def load_model():
 
 model, idx2char = load_model()
 
-if 'imgupload' not in st.session_state:
-    st.session_state.imgupload = '0'
-
 if 'typing' not in st.session_state:
     st.session_state.typing = ''
 
@@ -43,15 +40,11 @@ if 'select_shop' not in st.session_state:
     st.session_state.select_shop = '0'
 
 if st.session_state.ocr_result == "":
-    if st.session_state.imgupload == '0':
-        bg_image = st.file_uploader("Background image:", type=["png", "jpg"])
-        st.session_state.imgupload = '1'
-    else:
-        bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
-        st.session_state.imgupload = '0'
+    bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
 
     if bg_image == None:
         st.stop()
+        
 
     img = np.array(Image.open(bg_image))
 
@@ -59,7 +52,7 @@ if st.session_state.ocr_result == "":
 
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-    bookstore_list = {'kyobo': '교보문고', 'yp': '영풍문고', 'arcnbook': '아크앤북스'}
+    bookstore_list = {'kyobo': '교보문고', 'yp': '영풍문고', 'arcnbook': '아크앤북스', 'jongnobooks': '종로서적'}
 
     preds = [bookstore_list[i] for i in all_process(img) if i in bookstore_list]
     
