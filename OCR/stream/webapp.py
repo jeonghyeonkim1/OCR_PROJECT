@@ -87,18 +87,22 @@ else:
         point_display_radius = st.sidebar.slider(
             "Point display radius: ", 1, 25, 8)
     stroke_color = st.sidebar.color_picker("Stroke color hex: ")
-    bg_color = st.sidebar.color_picker("Background color hex: ", "#FFC0CB")
+    bg_color = st.sidebar.color_picker("Background color hex: ", "#BBB9B9")
     realtime_update = st.sidebar.checkbox("Update in realtime", False)
 
     st.info(f"검색한 서점 : {st.session_state.ocr_result}")
 
-    shop_list = reduce(lambda a, b: a.append(b) or a if b.find(st.session_state.typing) != -1 else a, ['광화문점', '가든파이브 바로드림센터', '강남점', '건대 바로드림센터', '동대문 바로드림센터',
-        '디큐브시티 바로드림센터', '목동점', '서울대 교내서점', '수유 바로드림센터', '신논현역스토어',
-        '영등포점', '은평 바로드림센터', '이화여대 교내서점', '잠실점', '천호점', '청량리 바로드림센터',
-        '합정점', '광교점', '광교 월드스퀘어센터', '부천점', '분당점', '송도 바로드림센터', '인천점',
-        '일산점', '판교점', '평촌점', '경성대ㆍ부경대 센터', '광주상무 센터', '대구점', '대전점', '부산점',
-        '세종 바로드림센터', '센텀시티점', '울산점', '전북대 교내서점', '전주 바로드림센터', '창원점', 
-        '천안점', '칠곡 센터', '포항공대 교내서점', '해운대센터'], [])
+    shop_list = reduce(lambda a, b: a.append(b) or a if b.find(st.session_state.typing) != -1 else a,
+        ['광화문점', '가든파이브 바로드림센터', '강남점', '건대 바로드림센터', '동대문 바로드림센터',
+            '디큐브시티 바로드림센터', '목동점', '서울대 교내서점', '수유 바로드림센터', '신논현역스토어',
+            '영등포점', '은평 바로드림센터', '이화여대 교내서점', '잠실점', '천호점', '청량리 바로드림센터',
+            '합정점', '광교점', '광교 월드스퀘어센터', '부천점', '분당점', '송도 바로드림센터', '인천점',
+            '일산점', '판교점', '평촌점', '경성대ㆍ부경대 센터', '광주상무 센터', '대구점', '대전점', '부산점',
+            '세종 바로드림센터', '센텀시티점', '울산점', '전북대 교내서점', '전주 바로드림센터', '창원점', 
+            '천안점', '칠곡 센터', '포항공대 교내서점', '해운대센터'
+        ],
+        []
+    )
 
     with st.form("my_form"):
         area = st.multiselect(
@@ -196,7 +200,7 @@ else:
                 st.session_state.typing += idx2char[result] if idx2char[result] != '랬' and idx2char[result] != '웝' else ""
 
             with col2:
-                st.write(f'<div style="height: 288px; font-size: 30px; background: pink; padding: 10px;">{st.session_state.typing}</div>', unsafe_allow_html=True)
+                st.write(f'<div style="height: 288px; font-size: 30px; background: #c4c6c7c7; padding: 10px;">{st.session_state.typing}</div>', unsafe_allow_html=True)
 
             # show result
             st.write(f' ## Result: {idx2char[result]}' if idx2char[result]
@@ -219,7 +223,7 @@ else:
             ax.bar(
                 chart_data['Pred'],
                 chart_data['Prob(%)'].apply(lambda a: round(float(a), 1)),
-                color='red',
+                color='#c4c6c7c7',
                 alpha=0.5
             )
             st.pyplot(fig)
